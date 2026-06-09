@@ -29,7 +29,7 @@ def main(page: ft.Page):
     page.update()
     time.sleep(2)
     
-    # 1. KHO DỮ LIỆU GỐC (Mặc định ban đầu để None hoàn toàn cho sạch dữ liệu)
+    # 1. KHO DỮ LIỆU GỐC
     kho_trick = {
         "Intro": [
             {"name": "Đi bộ quanh cột", "image": None},
@@ -65,7 +65,6 @@ def main(page: ft.Page):
         if group_outro.controls is None: group_outro.controls = []
         else: group_outro.controls.clear()
 
-        # ĐÃ SỬA TRIỆT ĐỂ: Tách riêng hàm tạo widget để né lỗi 'src' của Flet Web
         for item in kho_trick.get("Intro", []):
             if item["image"]:
                 trailing_widget = ft.Image(src="icons/icon_app.png", src_base64=item["image"], width=40, height=40, border_radius=5)
@@ -93,7 +92,6 @@ def main(page: ft.Page):
     txt_combo_main = ft.Text("Main Trick: ---", size=16, color=ft.Colors.PURPLE_200, weight=ft.FontWeight.BOLD)
     txt_combo_outro = ft.Text("Outro: ---", size=16, color=ft.Colors.BLUE_200)
     
-    # ĐÃ SỬA: Cho src mặc định trỏ thẳng vào icon app có sẵn để đánh lừa tham số bắt buộc của Flet
     img_preview_intro = ft.Image(src="icons/icon_app.png", width=50, height=50, border_radius=8, visible=False)
     img_preview_main = ft.Image(src="icons/icon_app.png", width=50, height=50, border_radius=8, visible=False)
     img_preview_outro = ft.Image(src="icons/icon_app.png", width=50, height=50, border_radius=8, visible=False)
@@ -104,17 +102,14 @@ def main(page: ft.Page):
             trick_main = random.choice(kho_trick["Main Trick"])
             trick_outro = random.choice(kho_trick["Outro"])
             
-            # Cập nhật chữ và hiện ảnh cho nhóm Intro
             txt_combo_intro.value = f"🎬 {trick_intro['name']}"
             if trick_intro["image"]: img_preview_intro.src_base64 = trick_intro["image"]; img_preview_intro.visible = True
             else: img_preview_intro.visible = False
                 
-            # Cập nhật chữ và hiện ảnh cho nhóm Main Trick
             txt_combo_main.value = f"💎 {trick_main['name']}"
             if trick_main["image"]: img_preview_main.src_base64 = trick_main["image"]; img_preview_main.visible = True
             else: img_preview_main.visible = False
                 
-            # Cập nhật chữ và hiện ảnh cho nhóm Outro
             txt_combo_outro.value = f"🏁 {trick_outro['name']}"
             if trick_outro["image"]: img_preview_outro.src_base64 = trick_outro["image"]; img_preview_outro.visible = True
             else: img_preview_outro.visible = False
@@ -122,8 +117,8 @@ def main(page: ft.Page):
             txt_combo_main.value = "⚠️ Hãy thêm đủ trick vào cả 3 nhóm trước nhé!"
         page.update()
 
-    # --- BỘ CHỌN ẢNH TỪ ĐIỆN THOẠI (FilePicker) ---
-    def on_file_picker_result(e: ft.FilePickerResultEvent):
+    # --- ĐÃ SỬA LỖI: Bỏ phần ép kiểu ft.FilePickerResultEvent gây lỗi module ---
+    def on_file_picker_result(e):
         nonlocal selected_image_data
         if e.files:
             selected_image_data = e.files[0].base64
