@@ -61,19 +61,19 @@ def main(page: ft.Page):
         if group_main.controls is not None: group_main.controls.clear()
         if group_outro.controls is not None: group_outro.controls.clear()
 
-        # Hiển thị danh sách Intro kèm ảnh thu nhỏ (Thumbnail) nếu có
+        # Hiển thị danh sách Intro kèm ảnh thu nhỏ (Đã sửa lỗi ImageFit)
         for item in kho_trick.get("Intro", []):
-            trailing_widget = ft.Image(src_base64=item["image"], width=40, height=40, fit=ft.ImageFit.COVER, border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
+            trailing_widget = ft.Image(src_base64=item["image"], width=40, height=40, fit="cover", border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
             group_intro.controls.append(ft.ListTile(leading=ft.Icon(ft.Icons.STAR_BORDER, color=ft.Colors.PINK_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD), trailing=trailing_widget))
 
-        # Hiển thị danh sách Main Trick kèm ảnh thu nhỏ nếu có
+        # Hiển thị danh sách Main Trick kèm ảnh thu nhỏ
         for item in kho_trick.get("Main Trick", []):
-            trailing_widget = ft.Image(src_base64=item["image"], width=40, height=40, fit=ft.ImageFit.COVER, border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
+            trailing_widget = ft.Image(src_base64=item["image"], width=40, height=40, fit="cover", border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
             group_main.controls.append(ft.ListTile(leading=ft.Icon(ft.Icons.STAR_BORDER, color=ft.Colors.PURPLE_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD), trailing=trailing_widget))
 
-        # Hiển thị danh sách Outro kèm ảnh thu nhỏ nếu có
+        # Hiển thị danh sách Outro kèm ảnh thu nhỏ
         for item in kho_trick.get("Outro", []):
-            trailing_widget = ft.Image(src_base64=item["image"], width=40, height=40, fit=ft.ImageFit.COVER, border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
+            trailing_widget = ft.Image(src_base64=item["image"], width=40, height=40, fit="cover", border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
             group_outro.controls.append(ft.ListTile(leading=ft.Icon(ft.Icons.STAR_BORDER, color=ft.Colors.BLUE_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD), trailing=trailing_widget))
         page.update()
 
