@@ -56,6 +56,9 @@ def main(page: ft.Page):
         ]
     }
 
+    # Biến tạm để hứng dữ liệu ảnh vừa chọn từ iPhone
+    selected_image_data = None
+
     # --- CÁC THÀNH PHẦN HIỂN THỊ DANH SÁCH ---
     group_intro = ft.ExpansionTile(
         title=ft.Text("Intro 🎬", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.PINK_300)
@@ -90,10 +93,14 @@ def main(page: ft.Page):
             group_outro.controls.append(ft.ListTile(leading=ft.Icon(icon_video, color=ft.Colors.BLUE_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD)))
         page.update()
 
-    # --- THÀNH PHẦN HIỂN THỊ KẾT QUẢ RANDOM COMBO ---
+    # --- THÀNH PHẦN HIỂN THỊ KẾT QUẢ RANDOM COMBO (Có hiện ảnh nếu có) ---
     txt_combo_intro = ft.Text("Intro: ---", size=16, color=ft.Colors.PINK_200)
     txt_combo_main = ft.Text("Main Trick: ---", size=16, color=ft.Colors.PURPLE_200, weight=ft.FontWeight.BOLD)
     txt_combo_outro = ft.Text("Outro: ---", size=16, color=ft.Colors.BLUE_200)
+    
+    img_preview_intro = ft.Image(width=60, height=60, fit=ft.ImageFit.COVER, border_radius=8, visible=False)
+    img_preview_main = ft.Image(width=60, height=60, fit=ft.ImageFit.COVER, border_radius=8, visible=False)
+    img_preview_outro = ft.Image(width=60, height=60, fit=ft.ImageFit.COVER, border_radius=8, visible=False)
 
     def generate_random_combo(e):
         if len(kho_trick.get("Intro", [])) > 0 and len(kho_trick.get("Main Trick", [])) > 0 and len(kho_trick.get("Outro", [])) > 0:
@@ -108,37 +115,57 @@ def main(page: ft.Page):
             txt_combo_main.value = "⚠️ Hãy thêm đủ trick vào cả 3 nhóm trước nhé!"
         page.update()
 
+    # --- BỘ CHỌN ẢNH TỪ ĐIỆN THOẠI (FilePicker) ---
+    def on_file_picker_result(e: ft.FilePickerResultEvent):
+        nonlocal selected_image_data
+        if e.files:
+            # Đọc file ảnh dưới dạng mã hóa Base64 an toàn để lưu thẳng vào máy iPhone
+            selected_image_data = e.files[0].base64
+            btn_upload.text = "📸 Đã chọn ảnh thành công!"
+            btn_upload.bgcolor = ft.Colors.GREEN_700
+        else:
+            selected_image_data = None
+            btn_upload.text = "CHỌN ẢNH TỪ IPHONE (Tùy chọn)"
+            btn_upload.bgcolor = ft.Colors.PINK_900
+        page.update()
+
+    file_picker = ft.FilePicker(on_result=on_file_picker_result)
+    page.overlay.append(file_picker)
+
     # --- GIAO DIỆN POPUP THÊM TRICK ---
     input_name = ft.TextField(label="Tên động tác / Trick", hint_text="Ví dụ: Superman...")
     dropdown_type = ft.Dropdown(
         label="Phân loại nhóm",
         options=[ft.dropdown.Option("Intro"), ft.dropdown.Option("Main Trick"), ft.dropdown.Option("Outro")],
     )
-    input_video_link = ft.TextField(label="Link Video tập (Tùy chọn)", hint_text="Dán link Drive/Youtube vào đây...")
+    btn_upload = ft.ElevatedButton(
+        "CHỌN ẢNH TỪ IPHONE (Tùy chọn)",
+        icon=ft.Icons.CAMERA_ALT,
+        bgcolor=ft.Colors.PINK_900,
+        color=ft.Colors.WHITE,
+        on_click=lambda _: file_picker.pick_files(file_type=ft.FilePickerFileType.IMAGE, allow_multiple=False)
+    )    
 
     def save_trick(e):
+        nonlocal selected_image_data
         name = input_name.value
         trick_type = dropdown_type.value
         if name and trick_type:
-            video_to_save = input_video_link.value if input_video_link.value else "No Video"
-            
-            # Thêm trực tiếp vào kho chứa (Đã xóa bỏ hoàn toàn client_storage gây lỗi)
-            kho_trick[trick_type].append({"name": name, "video": video_to_save})
+            # Lưu trick kèm theo ảnh dữ liệu (nếu có up, không up thì để None)
+            kho_trick[trick_type].append({"name": name, "image": selected_image_data})
             
             update_list_view()
             dialog.open = False
             input_name.value = ""
             dropdown_type.value = None
-            input_video_link.value = ""
+            selected_image_data = None
+            btn_upload.text = "CHỌN ẢNH TỪ IPHONE (Tùy chọn)"
+            btn_upload.bgcolor = ft.Colors.PINK_900
             page.update()
 
     dialog = ft.AlertDialog(
         title=ft.Text("Thêm Trick Mới 💃"),
-        content=ft.Column([
-            input_name, 
-            dropdown_type,
-            input_video_link
-        ], tight=True, spacing=15),
+        content=ft.Column([input_name, dropdown_type, btn_upload], tight=True, spacing=15),
         actions=[
             ft.TextButton("Hủy", on_click=lambda _: setattr(dialog, "open", False) or page.update()),
             ft.ElevatedButton("LƯU TRICK", bgcolor=ft.Colors.PINK_500, color=ft.Colors.WHITE, on_click=save_trick),
