@@ -8,7 +8,7 @@ def main(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.scroll = "adaptive"
 
-    # GOM THÀNH 1 BẢN DUY NHẤT: Cấu hình chuẩn để hiện Icon múa cột và né lỗi chữ P
+    # Cấu hình chuẩn duy nhất để hiện Icon múa cột và né lỗi chữ P
     page.web_app_manifest = {
         "name": "Pole Dance Notebook",
         "short_name": "Pole Dance",
@@ -29,7 +29,7 @@ def main(page: ft.Page):
     page.update()
     time.sleep(2)
     
-    # 1. KHO DỮ LIỆU GỐC (Đã đồng bộ hóa hoàn toàn sang lưu trữ HÌNH ẢNH)
+    # 1. KHO DỮ LIỆU GỐC (Đã đồng bộ hóa sang lưu trữ HÌNH ẢNH)
     kho_trick = {
         "Intro": [
             {"name": "Đi bộ quanh cột", "image": None},
@@ -57,23 +57,28 @@ def main(page: ft.Page):
 
     def update_list_view():
         # Làm sạch danh sách trước khi nạp mới
-        if group_intro.controls is not None: group_intro.controls.clear()
-        if group_main.controls is not None: group_main.controls.clear()
-        if group_outro.controls is not None: group_outro.controls.clear()
+        if group_intro.controls is None: group_intro.controls = []
+        else: group_intro.controls.clear()
+            
+        if group_main.controls is None: group_main.controls = []
+        else: group_main.controls.clear()
+            
+        if group_outro.controls is None: group_outro.controls = []
+        else: group_outro.controls.clear()
 
-        # Hiển thị danh sách Intro kèm ảnh thu nhỏ (Đã sửa lỗi ImageFit)
+        # Hiển thị danh sách Intro (ĐÃ XÓA SẠCH CHỮ FIT GÂY LỖI)
         for item in kho_trick.get("Intro", []):
-            trailing_widget = ft.Image(src_base64=item["image"], width=40, height=40, fit="cover", border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
+            trailing_widget = ft.Image(src_base64=item["image"], width=40, height=40, border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
             group_intro.controls.append(ft.ListTile(leading=ft.Icon(ft.Icons.STAR_BORDER, color=ft.Colors.PINK_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD), trailing=trailing_widget))
 
-        # Hiển thị danh sách Main Trick kèm ảnh thu nhỏ
+        # Hiển thị danh sách Main Trick
         for item in kho_trick.get("Main Trick", []):
-            trailing_widget = ft.Image(src_base64=item["image"], width=40, height=40, fit="cover", border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
+            trailing_widget = ft.Image(src_base64=item["image"], width=40, height=40, border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
             group_main.controls.append(ft.ListTile(leading=ft.Icon(ft.Icons.STAR_BORDER, color=ft.Colors.PURPLE_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD), trailing=trailing_widget))
 
-        # Hiển thị danh sách Outro kèm ảnh thu nhỏ
+        # Hiển thị danh sách Outro
         for item in kho_trick.get("Outro", []):
-            trailing_widget = ft.Image(src_base64=item["image"], width=40, height=40, fit="cover", border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
+            trailing_widget = ft.Image(src_base64=item["image"], width=40, height=40, border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
             group_outro.controls.append(ft.ListTile(leading=ft.Icon(ft.Icons.STAR_BORDER, color=ft.Colors.BLUE_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD), trailing=trailing_widget))
         page.update()
 
@@ -82,9 +87,10 @@ def main(page: ft.Page):
     txt_combo_main = ft.Text("Main Trick: ---", size=16, color=ft.Colors.PURPLE_200, weight=ft.FontWeight.BOLD)
     txt_combo_outro = ft.Text("Outro: ---", size=16, color=ft.Colors.BLUE_200)
     
-    img_preview_intro = ft.Image(width=50, height=50, fit=ft.ImageFit.COVER, border_radius=8, visible=False)
-    img_preview_main = ft.Image(width=50, height=50, fit=ft.ImageFit.COVER, border_radius=8, visible=False)
-    img_preview_outro = ft.Image(width=50, height=50, fit=ft.ImageFit.COVER, border_radius=8, visible=False)
+    # ĐÃ XÓA SẠCH CHỮ FIT GÂY LỖI Ở ĐÂY
+    img_preview_intro = ft.Image(width=50, height=50, border_radius=8, visible=False)
+    img_preview_main = ft.Image(width=50, height=50, border_radius=8, visible=False)
+    img_preview_outro = ft.Image(width=50, height=50, border_radius=8, visible=False)
 
     def generate_random_combo(e):
         if len(kho_trick.get("Intro", [])) > 0 and len(kho_trick.get("Main Trick", [])) > 0 and len(kho_trick.get("Outro", [])) > 0:
