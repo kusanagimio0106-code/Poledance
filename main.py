@@ -192,4 +192,4 @@ def main(page: ft.Page):
 
     update_list_view()
 
-app = ft.app(target=main, export_asgi=True)
+ft.app(target=main)
