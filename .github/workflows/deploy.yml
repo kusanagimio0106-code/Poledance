@@ -15,7 +15,7 @@ jobs:
         run: pip install flet
       - name: Publish Web App
         run: |
-          flet publish main.py
+          flet publish main.py --base-url /Poledance/
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
