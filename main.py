@@ -29,7 +29,7 @@ def main(page: ft.Page):
     page.update()
     time.sleep(2)
     
-    # 1. KHO DỮ LIỆU GỐC (Đã đồng bộ hóa sang lưu trữ HÌNH ẢNH)
+    # 1. KHO DỮ LIỆU GỐC
     kho_trick = {
         "Intro": [
             {"name": "Đi bộ quanh cột", "image": None},
@@ -56,7 +56,6 @@ def main(page: ft.Page):
     group_outro = ft.ExpansionTile(title=ft.Text("Outro 🏁", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.BLUE_300))
 
     def update_list_view():
-        # Làm sạch danh sách trước khi nạp mới
         if group_intro.controls is None: group_intro.controls = []
         else: group_intro.controls.clear()
             
@@ -66,19 +65,19 @@ def main(page: ft.Page):
         if group_outro.controls is None: group_outro.controls = []
         else: group_outro.controls.clear()
 
-        # Hiển thị danh sách Intro (ĐÃ XÓA SẠCH CHỮ FIT GÂY LỖI)
+        # ĐÃ SỬA: Thêm src="" vào phần hiển thị danh sách Intro
         for item in kho_trick.get("Intro", []):
-            trailing_widget = ft.Image(src_base64=item["image"], width=40, height=40, border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
+            trailing_widget = ft.Image(src="", src_base64=item["image"], width=40, height=40, border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
             group_intro.controls.append(ft.ListTile(leading=ft.Icon(ft.Icons.STAR_BORDER, color=ft.Colors.PINK_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD), trailing=trailing_widget))
 
-        # Hiển thị danh sách Main Trick
+        # ĐÃ SỬA: Thêm src="" vào phần hiển thị danh sách Main Trick
         for item in kho_trick.get("Main Trick", []):
-            trailing_widget = ft.Image(src_base64=item["image"], width=40, height=40, border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
+            trailing_widget = ft.Image(src="", src_base64=item["image"], width=40, height=40, border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
             group_main.controls.append(ft.ListTile(leading=ft.Icon(ft.Icons.STAR_BORDER, color=ft.Colors.PURPLE_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD), trailing=trailing_widget))
 
-        # Hiển thị danh sách Outro
+        # ĐÃ SỬA: Thêm src="" vào phần hiển thị danh sách Outro
         for item in kho_trick.get("Outro", []):
-            trailing_widget = ft.Image(src_base64=item["image"], width=40, height=40, border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
+            trailing_widget = ft.Image(src="", src_base64=item["image"], width=40, height=40, border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
             group_outro.controls.append(ft.ListTile(leading=ft.Icon(ft.Icons.STAR_BORDER, color=ft.Colors.BLUE_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD), trailing=trailing_widget))
         page.update()
 
@@ -87,10 +86,10 @@ def main(page: ft.Page):
     txt_combo_main = ft.Text("Main Trick: ---", size=16, color=ft.Colors.PURPLE_200, weight=ft.FontWeight.BOLD)
     txt_combo_outro = ft.Text("Outro: ---", size=16, color=ft.Colors.BLUE_200)
     
-    # ĐÃ XÓA SẠCH CHỮ FIT GÂY LỖI Ở ĐÂY
-    img_preview_intro = ft.Image(src="",width=50, height=50, border_radius=8, visible=False)
-    img_preview_main = ft.Image(src="",width=50, height=50, border_radius=8, visible=False)
-    img_preview_outro = ft.Image(src="",width=50, height=50, border_radius=8, visible=False)
+    # Giữ nguyên src="" chuẩn chỉnh ở khung Preview kết quả
+    img_preview_intro = ft.Image(src="", width=50, height=50, border_radius=8, visible=False)
+    img_preview_main = ft.Image(src="", width=50, height=50, border_radius=8, visible=False)
+    img_preview_outro = ft.Image(src="", width=50, height=50, border_radius=8, visible=False)
 
     def generate_random_combo(e):
         if len(kho_trick.get("Intro", [])) > 0 and len(kho_trick.get("Main Trick", [])) > 0 and len(kho_trick.get("Outro", [])) > 0:
