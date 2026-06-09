@@ -11,16 +11,20 @@ def main(page: ft.Page):
     page.web_app_manifest = {
         "name": "Pole Dance Notebook",
         "short_name": "Pole Dance",
+        "theme_color": "#e91e63",  # Màu hồng đậm cho thanh trạng thái iOS
+        "background_color": "#111111",  # Màu nền đen lúc load trang
+        "display": "standalone",
         "icons": [
             {
                 "src": "icons/icon_app.png",
                 "sizes": "512x512",
-                "type": "image/png"
+                "type": "image/png",
+                "purpose": "any maskable"
             }
         ]
     }
 
-    time.sleep(2)
+    page.run_javascript("setTimeout(function() { console.log('Delay 2s xong'); }, 2000);")
 
     # KHÚC THÊM VÀO: Chỉ định hình ảnh làm Icon đại diện cho App PWA trên iPhone
     page.web_app_manifest = {
