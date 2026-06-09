@@ -7,6 +7,8 @@ def main(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.scroll = "adaptive"
 
+    time.sleep(2)
+
     # KHÚC THÊM VÀO: Chỉ định hình ảnh làm Icon đại diện cho App PWA trên iPhone
     page.web_app_manifest = {
         "icons": [
