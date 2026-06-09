@@ -7,7 +7,7 @@ def main(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.scroll = "adaptive"
     
-    # 1. KHO DỮ LIỆU MẶC ĐỊNH (Đã đồng bộ hóa cấu trúc đúng chuẩn)
+    # 1. KHO DỮ LIỆU MẶC ĐỊNH (Đồng bộ cấu trúc)
     TRICK_MAC_DINH = {
         "Intro": [
             {"name": "Đi bộ quanh cột", "video": "Walk_around.mp4"},
@@ -28,7 +28,6 @@ def main(page: ft.Page):
     # ĐỌC DỮ LIỆU TỪ BỘ NHỚ MÁY IPHONE
     kho_trick = page.client_storage.get("kho_trick")
     
-    # Nếu lần đầu mở app (chưa có dữ liệu), nạp danh sách gốc vào máy
     if kho_trick is None:
         kho_trick = TRICK_MAC_DINH.copy()
         page.client_storage.set("kho_trick", kho_trick)
@@ -54,7 +53,7 @@ def main(page: ft.Page):
         if group_outro.controls is None: group_outro.controls = []
         else: group_outro.controls.clear()
 
-        # Nạp dữ liệu hiển thị (Đã sửa lỗi phân tách nhóm)
+        # Nạp dữ liệu hiển thị (Đồng bộ nhóm dữ liệu)
         for item in kho_trick.get("Intro", []):
             icon_video = ft.Icons.VIDEO_CAMERA_FRONT if item["video"] != "No Video" else ft.Icons.LINK_OFF
             group_intro.controls.append(ft.ListTile(leading=ft.Icon(icon_video, color=ft.Colors.PINK_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD)))
@@ -86,59 +85,37 @@ def main(page: ft.Page):
             txt_combo_main.value = "⚠️ Hãy thêm đủ trick vào cả 3 nhóm trước nhé!"
         page.update()
 
-    # --- CHỨC NĂNG CHỌN VIDEO TỪ ĐIỆN THOẠI ---
-    selected_video_path = ""
-    def on_file_result(e):
-        nonlocal selected_video_path
-        if e.files:
-            selected_video_path = e.files[0].name
-            txt_file_status.value = f"✅ Đã chọn video: {selected_video_path}"
-            txt_file_status.color = ft.Colors.GREEN_400
-        else:
-            selected_video_path = ""
-            txt_file_status.value = "❌ Chưa chọn video nào"
-            txt_file_status.color = ft.Colors.RED_400
-        page.update()
-
-    file_picker = ft.FilePicker()
-    file_picker.on_result = on_file_result
-    page.overlay.append(file_picker)
-
-    # --- GIAO DIỆN POPUP THÊM TRICK ---
+    # --- GIAO DIỆN POPUP THÊM TRICK (Đã bỏ FilePicker, đổi sang dán link video) ---
     input_name = ft.TextField(label="Tên động tác / Trick", hint_text="Ví dụ: Superman...")
     dropdown_type = ft.Dropdown(
         label="Phân loại nhóm",
         options=[ft.dropdown.Option("Intro"), ft.dropdown.Option("Main Trick"), ft.dropdown.Option("Outro")],
     )
-    txt_file_status = ft.Text("Chưa chọn file video (Tùy chọn)", color=ft.Colors.WHITE54)
+    input_video_link = ft.TextField(label="Link Video tập (Tùy chọn)", hint_text="Dán link Drive/Youtube vào đây...")
 
     def save_trick(e):
-        nonlocal selected_video_path
         name = input_name.value
         trick_type = dropdown_type.value
         if name and trick_type:
-            video_to_save = selected_video_path if selected_video_path else "No Video"
+            video_to_save = input_video_link.value if input_video_link.value else "No Video"
             
-            # 1. Thêm vào bộ nhớ RAM tạm thời
+            # Thêm vào mảng tạm và ghi đè lưu trữ vĩnh viễn
             kho_trick[trick_type].append({"name": name, "video": video_to_save})
-            
-            # 2. ĐÃ THÊM: Đồng bộ lưu trữ vĩnh viễn vào máy iPhone
             page.client_storage.set("kho_trick", kho_trick)
             
             update_list_view()
             dialog.open = False
             input_name.value = ""
             dropdown_type.value = None
-            selected_video_path = ""
-            txt_file_status.value = "Chưa chọn file video (Tùy chọn)"
+            input_video_link.value = ""
             page.update()
 
     dialog = ft.AlertDialog(
         title=ft.Text("Thêm Trick Mới 💃"),
         content=ft.Column([
-            input_name, dropdown_type,
-            ft.ElevatedButton("Mở Kho Ảnh/Video 📱", icon=ft.Icons.IMAGE, on_click=lambda _: file_picker.pick_files(file_type=ft.FilePickerFileType.VIDEO)),
-            txt_file_status
+            input_name, 
+            dropdown_type,
+            input_video_link  # Ô nhập link trực quan
         ], tight=True, spacing=15),
         actions=[
             ft.TextButton("Hủy", on_click=lambda _: setattr(dialog, "open", False) or page.update()),
@@ -149,7 +126,7 @@ def main(page: ft.Page):
 
     # --- GIAO DIỆN MÀN HÌNH CHÍNH ---
     page.add(
-        ft.Text("POLE DANCE COMBO", size=24, weight=ft.FontWeight.BOLD),
+        ft.Text("POLE DANCE NOTEBOOK", size=24, weight=ft.FontWeight.BOLD),
         ft.Divider(height=5, color=ft.Colors.TRANSPARENT),
         
         ft.Container(
@@ -167,7 +144,7 @@ def main(page: ft.Page):
         ),
         ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
         
-        # NÚT BẤM TẠO COMBO (Căn giữa hoàn hảo bằng Row)
+        # NÚT BẤM TẠO COMBO (Row căn giữa)
         ft.Row(
             controls=[
                 ft.ElevatedButton(
@@ -183,7 +160,7 @@ def main(page: ft.Page):
         
         ft.Divider(height=15, color=ft.Colors.WHITE24),
         
-        # NÚT BẤM THÊM TRICK VÀO KHO (Đã được in đậm)
+        # NÚT BẤM THÊM TRICK VÀO KHO (Row căn giữa, in đậm)
         ft.Row(
             controls=[
                 ft.OutlinedButton(
