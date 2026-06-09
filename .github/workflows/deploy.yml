@@ -15,9 +15,9 @@ jobs:
         run: pip install flet
       - name: Publish Web App
         run: |
-          flet pack main.py
+          flet publish main.py
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: dist/web
+          folder: build/web
           branch: gh-pages
