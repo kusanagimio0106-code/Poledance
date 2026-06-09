@@ -1,27 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base href=".%252F">
+  <base href=".">
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="Pole Dance Notebook">
+
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Poledance">
   <link rel="apple-touch-icon" href="icons/icon_app.png">
   <link rel="icon" type="image/png" href="favicon.png"/>
+
   <title>Poledance</title>
   <link rel="manifest" href="manifest.json">
+
+  <script>
+    // Đoạn mã bắt buộc của Flet để kích hoạt app chạy ngầm
+    window.addEventListener('load', function(ev) {
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: window.flutterWebVersion,
+        },
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine().then(function(appRunner) {
+            appRunner.runApp();
+          });
+        }
+      });
+    });
+  </script>
+  <script src="flutter.js" defer></script>
+
   <style>
     body { background-color: #111111; margin: 0; padding: 0; overflow: hidden; }
-    .loading { display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh; flex-direction: column; }
-    .loading img { width: 150px; height: 150px; object-fit: contain; }
+    .loading { display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh; }
+    .loading img { width: 120px; height: 120px; object-fit: contain; }
   </style>
 </head>
 <body>
   <div class="loading">
     <img src="loading-animation.gif" alt="Loading..."/>
   </div>
-  <script src="main.dart.js" type="application/javascript"></script>
 </body>
 </html>
