@@ -29,26 +29,26 @@ def main(page: ft.Page):
     page.update()
     time.sleep(2)
     
-    # 1. KHO DỮ LIỆU GỐC
+    # 1. KHO DỮ LIỆU GỐC (Mặc định ban đầu để None hoàn toàn cho sạch dữ liệu)
     kho_trick = {
         "Intro": [
-            {"name": "Đi bộ quanh cột", "image": ""},
-            {"name": "Xoay hông dạo đầu", "image": ""},
-            {"name": "Hook xoay", "image": ""}
+            {"name": "Đi bộ quanh cột", "image": None},
+            {"name": "Xoay hông dạo đầu", "image": None},
+            {"name": "Hook xoay", "image": None}
         ],
         "Main Trick": [
-            {"name": "Superman", "image": ""},
-            {"name": "Gemini", "image": ""},
-            {"name": "Inverted Scorpio", "image": ""}
+            {"name": "Superman", "image": None},
+            {"name": "Gemini", "image": None},
+            {"name": "Inverted Scorpio", "image": None}
         ],
         "Outro": [
-            {"name": "Floorwork kết bài", "image": ""},
-            {"name": "Slide xuống nhẹ nhàng", "image": ""}
+            {"name": "Floorwork kết bài", "image": None},
+            {"name": "Slide xuống nhẹ nhàng", "image": None}
         ]
     }
 
-    # Biến tạm để hứng dữ liệu ảnh vừa chọn từ iPhone (Mặc định là chuỗi rỗng thay vì None)
-    selected_image_data = ""
+    # Biến tạm để hứng dữ liệu ảnh vừa chọn từ iPhone
+    selected_image_data = None
 
     # --- CÁC THÀNH PHẦN HIỂN THỊ DANH SÁCH ---
     group_intro = ft.ExpansionTile(title=ft.Text("Intro 🎬", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.PINK_300))
@@ -65,19 +65,26 @@ def main(page: ft.Page):
         if group_outro.controls is None: group_outro.controls = []
         else: group_outro.controls.clear()
 
-        # Hiển thị danh sách Intro (Đã sửa lỗi src tuyệt đối)
+        # ĐÃ SỬA TRIỆT ĐỂ: Tách riêng hàm tạo widget để né lỗi 'src' của Flet Web
         for item in kho_trick.get("Intro", []):
-            trailing_widget = ft.Image(src="", src_base64=item["image"], width=40, height=40, border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
+            if item["image"]:
+                trailing_widget = ft.Image(src="icons/icon_app.png", src_base64=item["image"], width=40, height=40, border_radius=5)
+            else:
+                trailing_widget = ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
             group_intro.controls.append(ft.ListTile(leading=ft.Icon(ft.Icons.STAR_BORDER, color=ft.Colors.PINK_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD), trailing=trailing_widget))
 
-        # Hiển thị danh sách Main Trick
         for item in kho_trick.get("Main Trick", []):
-            trailing_widget = ft.Image(src="", src_base64=item["image"], width=40, height=40, border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
+            if item["image"]:
+                trailing_widget = ft.Image(src="icons/icon_app.png", src_base64=item["image"], width=40, height=40, border_radius=5)
+            else:
+                trailing_widget = ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
             group_main.controls.append(ft.ListTile(leading=ft.Icon(ft.Icons.STAR_BORDER, color=ft.Colors.PURPLE_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD), trailing=trailing_widget))
 
-        # Hiển thị danh sách Outro
         for item in kho_trick.get("Outro", []):
-            trailing_widget = ft.Image(src="", src_base64=item["image"], width=40, height=40, border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
+            if item["image"]:
+                trailing_widget = ft.Image(src="icons/icon_app.png", src_base64=item["image"], width=40, height=40, border_radius=5)
+            else:
+                trailing_widget = ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
             group_outro.controls.append(ft.ListTile(leading=ft.Icon(ft.Icons.STAR_BORDER, color=ft.Colors.BLUE_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD), trailing=trailing_widget))
         page.update()
 
@@ -86,10 +93,10 @@ def main(page: ft.Page):
     txt_combo_main = ft.Text("Main Trick: ---", size=16, color=ft.Colors.PURPLE_200, weight=ft.FontWeight.BOLD)
     txt_combo_outro = ft.Text("Outro: ---", size=16, color=ft.Colors.BLUE_200)
     
-    # ĐÃ SỬA CHUẨN 100%: Khởi tạo ô ảnh trống an toàn không bao giờ sập lỗi src
-    img_preview_intro = ft.Image(src="", src_base64="", width=50, height=50, border_radius=8, visible=False)
-    img_preview_main = ft.Image(src="", src_base64="", width=50, height=50, border_radius=8, visible=False)
-    img_preview_outro = ft.Image(src="", src_base64="", width=50, height=50, border_radius=8, visible=False)
+    # ĐÃ SỬA: Cho src mặc định trỏ thẳng vào icon app có sẵn để đánh lừa tham số bắt buộc của Flet
+    img_preview_intro = ft.Image(src="icons/icon_app.png", width=50, height=50, border_radius=8, visible=False)
+    img_preview_main = ft.Image(src="icons/icon_app.png", width=50, height=50, border_radius=8, visible=False)
+    img_preview_outro = ft.Image(src="icons/icon_app.png", width=50, height=50, border_radius=8, visible=False)
 
     def generate_random_combo(e):
         if len(kho_trick.get("Intro", [])) > 0 and len(kho_trick.get("Main Trick", [])) > 0 and len(kho_trick.get("Outro", [])) > 0:
@@ -123,7 +130,7 @@ def main(page: ft.Page):
             btn_upload.text = "📸 Đã chọn ảnh thành công!"
             btn_upload.bgcolor = ft.Colors.GREEN_700
         else:
-            selected_image_data = ""
+            selected_image_data = None
             btn_upload.text = "CHỌN ẢNH TỪ IPHONE (Tùy chọn)"
             btn_upload.bgcolor = ft.Colors.PINK_900
         page.update()
@@ -156,7 +163,7 @@ def main(page: ft.Page):
             dialog.open = False
             input_name.value = ""
             dropdown_type.value = None
-            selected_image_data = ""
+            selected_image_data = None
             btn_upload.text = "CHỌN ẢNH TỪ IPHONE (Tùy chọn)"
             btn_upload.bgcolor = ft.Colors.PINK_900
             page.update()
