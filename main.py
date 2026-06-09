@@ -1,5 +1,6 @@
 import flet as ft
 import random
+import json
 
 def main(page: ft.Page):
     page.title = "Pole Dance Notebook"
@@ -26,11 +27,18 @@ def main(page: ft.Page):
     }
 
     # ĐỌC DỮ LIỆU TỪ BỘ NHỚ MÁY IPHONE
-    kho_trick = page.client_storage.get("kho_trick")
-    
-    if kho_trick is None:
+    kho_trick = {}
+    try:
+        # Thử đọc dữ liệu từ LocalStorage của trình duyệt điện thoại
+        data_saved = page.run_javascript_return("localStorage.getItem('kho_trick');")
+        if data_saved and data_saved != "null":
+            kho_trick = json.loads(data_saved)
+        else:
+            kho_trick = TRICK_MAC_DINH.copy()
+            page.run_javascript(f"localStorage.setItem('kho_trick', '{json.dumps(kho_trick)}');")
+    except Exception:
+        # Nếu có bất kỳ lỗi bảo mật nào, app vẫn chạy bình thường với dữ liệu gốc
         kho_trick = TRICK_MAC_DINH.copy()
-        page.client_storage.set("kho_trick", kho_trick)
 
     # --- CÁC THÀNH PHẦN HIỂN THỊ DANH SÁCH ---
     group_intro = ft.ExpansionTile(
