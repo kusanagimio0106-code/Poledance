@@ -88,9 +88,9 @@ def main(page: ft.Page):
     txt_combo_outro = ft.Text("Outro: ---", size=16, color=ft.Colors.BLUE_200)
     
     # ĐÃ XÓA SẠCH CHỮ FIT GÂY LỖI Ở ĐÂY
-    img_preview_intro = ft.Image(width=50, height=50, border_radius=8, visible=False)
-    img_preview_main = ft.Image(width=50, height=50, border_radius=8, visible=False)
-    img_preview_outro = ft.Image(width=50, height=50, border_radius=8, visible=False)
+    img_preview_intro = ft.Image(src="",width=50, height=50, border_radius=8, visible=False)
+    img_preview_main = ft.Image(src="",width=50, height=50, border_radius=8, visible=False)
+    img_preview_outro = ft.Image(src="",width=50, height=50, border_radius=8, visible=False)
 
     def generate_random_combo(e):
         if len(kho_trick.get("Intro", [])) > 0 and len(kho_trick.get("Main Trick", [])) > 0 and len(kho_trick.get("Outro", [])) > 0:
