@@ -1,11 +1,24 @@
 import flet as ft
 import random
+import time
 
 def main(page: ft.Page):
     page.title = "Pole Dance Notebook"
     page.theme_mode = ft.ThemeMode.DARK
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.scroll = "adaptive"
+
+    page.web_app_manifest = {
+        "name": "Pole Dance Notebook",
+        "short_name": "Pole Dance",
+        "icons": [
+            {
+                "src": "icons/icon_app.png",
+                "sizes": "512x512",
+                "type": "image/png"
+            }
+        ]
+    }
 
     time.sleep(2)
 
