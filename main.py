@@ -8,11 +8,12 @@ def main(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.scroll = "adaptive"
 
+    # GOM THÀNH 1 BẢN DUY NHẤT: Cấu hình chuẩn để hiện Icon múa cột và né lỗi chữ P
     page.web_app_manifest = {
         "name": "Pole Dance Notebook",
         "short_name": "Pole Dance",
-        "theme_color": "#e91e63",  # Màu hồng đậm cho thanh trạng thái iOS
-        "background_color": "#111111",  # Màu nền đen lúc load trang
+        "theme_color": "#e91e63",
+        "background_color": "#111111",
         "display": "standalone",
         "icons": [
             {
@@ -24,35 +25,25 @@ def main(page: ft.Page):
         ]
     }
 
+    # Kích hoạt màn hình chờ 2 giây chuyên nghiệp
     page.update()
     time.sleep(2)
-
-    # KHÚC THÊM VÀO: Chỉ định hình ảnh làm Icon đại diện cho App PWA trên iPhone
-    page.web_app_manifest = {
-        "icons": [
-            {
-                "src": "icon_app.png",  # Tên file ảnh bạn vừa up lên GitHub
-                "sizes": "512x512",
-                "type": "image/png"
-            }
-        ]
-    }
     
-    # 1. KHO DỮ LIỆU GỐC (Đã đồng bộ đúng cấu trúc Intro, Main Trick, Outro)
+    # 1. KHO DỮ LIỆU GỐC (Đã đồng bộ hóa hoàn toàn sang lưu trữ HÌNH ẢNH)
     kho_trick = {
         "Intro": [
-            {"name": "Đi bộ quanh cột", "video": "Walk_around.mp4"},
-            {"name": "Xoay hông dạo đầu", "video": "Hip_roll.mp4"},
-            {"name": "Hook xoay", "video": "No Video"}
+            {"name": "Đi bộ quanh cột", "image": None},
+            {"name": "Xoay hông dạo đầu", "image": None},
+            {"name": "Hook xoay", "image": None}
         ],
         "Main Trick": [
-            {"name": "Superman", "video": "Superman.mp4"},
-            {"name": "Gemini", "video": "No Video"},
-            {"name": "Inverted Scorpio", "video": "Invert.mp4"}
+            {"name": "Superman", "image": None},
+            {"name": "Gemini", "image": None},
+            {"name": "Inverted Scorpio", "image": None}
         ],
         "Outro": [
-            {"name": "Floorwork kết bài", "video": "Floor.mp4"},
-            {"name": "Slide xuống nhẹ nhàng", "video": "No Video"}
+            {"name": "Floorwork kết bài", "image": None},
+            {"name": "Slide xuống nhẹ nhàng", "image": None}
         ]
     }
 
@@ -60,57 +51,61 @@ def main(page: ft.Page):
     selected_image_data = None
 
     # --- CÁC THÀNH PHẦN HIỂN THỊ DANH SÁCH ---
-    group_intro = ft.ExpansionTile(
-        title=ft.Text("Intro 🎬", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.PINK_300)
-    )
-    group_main = ft.ExpansionTile(
-        title=ft.Text("Main Trick 💎", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.PURPLE_300)
-    )
-    group_outro = ft.ExpansionTile(
-        title=ft.Text("Outro 🏁", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.BLUE_300)
-    )
+    group_intro = ft.ExpansionTile(title=ft.Text("Intro 🎬", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.PINK_300))
+    group_main = ft.ExpansionTile(title=ft.Text("Main Trick 💎", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.PURPLE_300))
+    group_outro = ft.ExpansionTile(title=ft.Text("Outro 🏁", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.BLUE_300))
 
     def update_list_view():
-        if group_intro.controls is None: group_intro.controls = []
-        else: group_intro.controls.clear()
-            
-        if group_main.controls is None: group_main.controls = []
-        else: group_main.controls.clear()
-            
-        if group_outro.controls is None: group_outro.controls = []
-        else: group_outro.controls.clear()
+        # Làm sạch danh sách trước khi nạp mới
+        if group_intro.controls is not None: group_intro.controls.clear()
+        if group_main.controls is not None: group_main.controls.clear()
+        if group_outro.controls is not None: group_outro.controls.clear()
 
+        # Hiển thị danh sách Intro kèm ảnh thu nhỏ (Thumbnail) nếu có
         for item in kho_trick.get("Intro", []):
-            icon_video = ft.Icons.VIDEO_CAMERA_FRONT if item["video"] != "No Video" else ft.Icons.LINK_OFF
-            group_intro.controls.append(ft.ListTile(leading=ft.Icon(icon_video, color=ft.Colors.PINK_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD)))
+            trailing_widget = ft.Image(src_base64=item["image"], width=40, height=40, fit=ft.ImageFit.COVER, border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
+            group_intro.controls.append(ft.ListTile(leading=ft.Icon(ft.Icons.STAR_BORDER, color=ft.Colors.PINK_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD), trailing=trailing_widget))
 
+        # Hiển thị danh sách Main Trick kèm ảnh thu nhỏ nếu có
         for item in kho_trick.get("Main Trick", []):
-            icon_video = ft.Icons.VIDEO_CAMERA_FRONT if item["video"] != "No Video" else ft.Icons.LINK_OFF
-            group_main.controls.append(ft.ListTile(leading=ft.Icon(icon_video, color=ft.Colors.PURPLE_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD)))
+            trailing_widget = ft.Image(src_base64=item["image"], width=40, height=40, fit=ft.ImageFit.COVER, border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
+            group_main.controls.append(ft.ListTile(leading=ft.Icon(ft.Icons.STAR_BORDER, color=ft.Colors.PURPLE_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD), trailing=trailing_widget))
 
+        # Hiển thị danh sách Outro kèm ảnh thu nhỏ nếu có
         for item in kho_trick.get("Outro", []):
-            icon_video = ft.Icons.VIDEO_CAMERA_FRONT if item["video"] != "No Video" else ft.Icons.LINK_OFF
-            group_outro.controls.append(ft.ListTile(leading=ft.Icon(icon_video, color=ft.Colors.BLUE_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD)))
+            trailing_widget = ft.Image(src_base64=item["image"], width=40, height=40, fit=ft.ImageFit.COVER, border_radius=5) if item["image"] else ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
+            group_outro.controls.append(ft.ListTile(leading=ft.Icon(ft.Icons.STAR_BORDER, color=ft.Colors.BLUE_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD), trailing=trailing_widget))
         page.update()
 
-    # --- THÀNH PHẦN HIỂN THỊ KẾT QUẢ RANDOM COMBO (Có hiện ảnh nếu có) ---
+    # --- THÀNH PHẦN HIỂN THỊ KẾT QUẢ RANDOM COMBO ---
     txt_combo_intro = ft.Text("Intro: ---", size=16, color=ft.Colors.PINK_200)
     txt_combo_main = ft.Text("Main Trick: ---", size=16, color=ft.Colors.PURPLE_200, weight=ft.FontWeight.BOLD)
     txt_combo_outro = ft.Text("Outro: ---", size=16, color=ft.Colors.BLUE_200)
     
-    img_preview_intro = ft.Image(width=60, height=60, fit=ft.ImageFit.COVER, border_radius=8, visible=False)
-    img_preview_main = ft.Image(width=60, height=60, fit=ft.ImageFit.COVER, border_radius=8, visible=False)
-    img_preview_outro = ft.Image(width=60, height=60, fit=ft.ImageFit.COVER, border_radius=8, visible=False)
+    img_preview_intro = ft.Image(width=50, height=50, fit=ft.ImageFit.COVER, border_radius=8, visible=False)
+    img_preview_main = ft.Image(width=50, height=50, fit=ft.ImageFit.COVER, border_radius=8, visible=False)
+    img_preview_outro = ft.Image(width=50, height=50, fit=ft.ImageFit.COVER, border_radius=8, visible=False)
 
     def generate_random_combo(e):
         if len(kho_trick.get("Intro", [])) > 0 and len(kho_trick.get("Main Trick", [])) > 0 and len(kho_trick.get("Outro", [])) > 0:
-            trick_intro = random.choice(kho_trick["Intro"])["name"]
-            trick_main = random.choice(kho_trick["Main Trick"])["name"]
-            trick_outro = random.choice(kho_trick["Outro"])["name"]
+            trick_intro = random.choice(kho_trick["Intro"])
+            trick_main = random.choice(kho_trick["Main Trick"])
+            trick_outro = random.choice(kho_trick["Outro"])
             
-            txt_combo_intro.value = f"🎬 {trick_intro}"
-            txt_combo_main.value = f"💎 {trick_main}"
-            txt_combo_outro.value = f"🏁 {trick_outro}"
+            # Cập nhật chữ và hiện ảnh cho nhóm Intro
+            txt_combo_intro.value = f"🎬 {trick_intro['name']}"
+            if trick_intro["image"]: img_preview_intro.src_base64 = trick_intro["image"]; img_preview_intro.visible = True
+            else: img_preview_intro.visible = False
+                
+            # Cập nhật chữ và hiện ảnh cho nhóm Main Trick
+            txt_combo_main.value = f"💎 {trick_main['name']}"
+            if trick_main["image"]: img_preview_main.src_base64 = trick_main["image"]; img_preview_main.visible = True
+            else: img_preview_main.visible = False
+                
+            # Cập nhật chữ và hiện ảnh cho nhóm Outro
+            txt_combo_outro.value = f"🏁 {trick_outro['name']}"
+            if trick_outro["image"]: img_preview_outro.src_base64 = trick_outro["image"]; img_preview_outro.visible = True
+            else: img_preview_outro.visible = False
         else:
             txt_combo_main.value = "⚠️ Hãy thêm đủ trick vào cả 3 nhóm trước nhé!"
         page.update()
@@ -119,7 +114,6 @@ def main(page: ft.Page):
     def on_file_picker_result(e: ft.FilePickerResultEvent):
         nonlocal selected_image_data
         if e.files:
-            # Đọc file ảnh dưới dạng mã hóa Base64 an toàn để lưu thẳng vào máy iPhone
             selected_image_data = e.files[0].base64
             btn_upload.text = "📸 Đã chọn ảnh thành công!"
             btn_upload.bgcolor = ft.Colors.GREEN_700
@@ -151,7 +145,6 @@ def main(page: ft.Page):
         name = input_name.value
         trick_type = dropdown_type.value
         if name and trick_type:
-            # Lưu trick kèm theo ảnh dữ liệu (nếu có up, không up thì để None)
             kho_trick[trick_type].append({"name": name, "image": selected_image_data})
             
             update_list_view()
@@ -181,9 +174,9 @@ def main(page: ft.Page):
         ft.Container(
             content=ft.Column([
                 ft.Text("COMBO HÔM NAY CỦA BẠN:", size=12, color=ft.Colors.WHITE54, weight=ft.FontWeight.BOLD),
-                txt_combo_intro,
-                txt_combo_main,
-                txt_combo_outro
+                ft.Row([txt_combo_intro, img_preview_intro], alignment=ft.MainAxisAlignment.SPACE_BETWEEN, width=290),
+                ft.Row([txt_combo_main, img_preview_main], alignment=ft.MainAxisAlignment.SPACE_BETWEEN, width=290),
+                ft.Row([txt_combo_outro, img_preview_outro], alignment=ft.MainAxisAlignment.SPACE_BETWEEN, width=290),
             ], spacing=8),
             padding=15,
             border_radius=12,
@@ -196,17 +189,10 @@ def main(page: ft.Page):
         # NÚT XOAY COMBO
         ft.Row(
             controls=[
-                ft.ElevatedButton(
-                    "XOAY COMBO NGẪU NHIÊN 💃🎲",
-                    bgcolor=ft.Colors.PINK_500,
-                    color=ft.Colors.WHITE,
-                    on_click=generate_random_combo,
-                    width=280
-                )
+                ft.ElevatedButton("XOAY COMBO NGẪU NHIÊN 💃🎲", bgcolor=ft.Colors.PINK_500, color=ft.Colors.WHITE, on_click=generate_random_combo, width=280)
             ],
             alignment=ft.MainAxisAlignment.CENTER
         ),
-        
         ft.Divider(height=15, color=ft.Colors.WHITE24),
         
         # NÚT THÊM TRICK
@@ -215,10 +201,7 @@ def main(page: ft.Page):
                 ft.OutlinedButton(
                     "THÊM TRICK VÀO KHO", 
                     icon=ft.Icons.ADD,
-                    style=ft.ButtonStyle(
-                        color=ft.Colors.PINK_300,
-                        text_style=ft.TextStyle(weight="bold") 
-                    ),
+                    style=ft.ButtonStyle(color=ft.Colors.PINK_300, text_style=ft.TextStyle(weight="bold")),
                     on_click=lambda _: setattr(dialog, "open", True) or page.update(),
                     width=220
                 )
