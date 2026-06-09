@@ -24,7 +24,7 @@ def main(page: ft.Page):
         ]
     }
 
-    page.run_javascript("setTimeout(function() { console.log('Delay 2s xong'); }, 2000);")
+    page.exec_javascript("setTimeout(function() { console.log('Delay 2s xong'); }, 2000);")
 
     # KHÚC THÊM VÀO: Chỉ định hình ảnh làm Icon đại diện cho App PWA trên iPhone
     page.web_app_manifest = {
