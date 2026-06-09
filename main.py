@@ -7,8 +7,8 @@ def main(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.scroll = "adaptive"
     
-    # 1. KHO DỮ LIỆU CÓ SẴN (BẠN CÓ THỂ THÊM BẰNG APP)
-    kho_trick = {
+    # 1. KHO DỮ LIỆU MẶC ĐỊNH (Đã đồng bộ hóa cấu trúc đúng chuẩn)
+    TRICK_MAC_DINH = {
         "Intro": [
             {"name": "Đi bộ quanh cột", "video": "Walk_around.mp4"},
             {"name": "Xoay hông dạo đầu", "video": "Hip_roll.mp4"},
@@ -24,6 +24,14 @@ def main(page: ft.Page):
             {"name": "Slide xuống nhẹ nhàng", "video": "No Video"}
         ]
     }
+
+    # ĐỌC DỮ LIỆU TỪ BỘ NHỚ MÁY IPHONE
+    kho_trick = page.client_storage.get("kho_trick")
+    
+    # Nếu lần đầu mở app (chưa có dữ liệu), nạp danh sách gốc vào máy
+    if kho_trick is None:
+        kho_trick = TRICK_MAC_DINH.copy()
+        page.client_storage.set("kho_trick", kho_trick)
 
     # --- CÁC THÀNH PHẦN HIỂN THỊ DANH SÁCH ---
     group_intro = ft.ExpansionTile(
@@ -46,16 +54,16 @@ def main(page: ft.Page):
         if group_outro.controls is None: group_outro.controls = []
         else: group_outro.controls.clear()
 
-        # Nạp dữ liệu mới
-        for item in kho_trick["Intro"]:
+        # Nạp dữ liệu hiển thị (Đã sửa lỗi phân tách nhóm)
+        for item in kho_trick.get("Intro", []):
             icon_video = ft.Icons.VIDEO_CAMERA_FRONT if item["video"] != "No Video" else ft.Icons.LINK_OFF
             group_intro.controls.append(ft.ListTile(leading=ft.Icon(icon_video, color=ft.Colors.PINK_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD)))
 
-        for item in kho_trick["Main Trick"]:
+        for item in kho_trick.get("Main Trick", []):
             icon_video = ft.Icons.VIDEO_CAMERA_FRONT if item["video"] != "No Video" else ft.Icons.LINK_OFF
             group_main.controls.append(ft.ListTile(leading=ft.Icon(icon_video, color=ft.Colors.PURPLE_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD)))
 
-        for item in kho_trick["Outro"]:
+        for item in kho_trick.get("Outro", []):
             icon_video = ft.Icons.VIDEO_CAMERA_FRONT if item["video"] != "No Video" else ft.Icons.LINK_OFF
             group_outro.controls.append(ft.ListTile(leading=ft.Icon(icon_video, color=ft.Colors.BLUE_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD)))
         page.update()
@@ -65,9 +73,8 @@ def main(page: ft.Page):
     txt_combo_main = ft.Text("Main Trick: ---", size=16, color=ft.Colors.PURPLE_200, weight=ft.FontWeight.BOLD)
     txt_combo_outro = ft.Text("Outro: ---", size=16, color=ft.Colors.BLUE_200)
 
-    # Hàm xử lý bốc ngẫu nhiên combo
     def generate_random_combo(e):
-        if len(kho_trick["Intro"]) > 0 and len(kho_trick["Main Trick"]) > 0 and len(kho_trick["Outro"]) > 0:
+        if len(kho_trick.get("Intro", [])) > 0 and len(kho_trick.get("Main Trick", [])) > 0 and len(kho_trick.get("Outro", [])) > 0:
             trick_intro = random.choice(kho_trick["Intro"])["name"]
             trick_main = random.choice(kho_trick["Main Trick"])["name"]
             trick_outro = random.choice(kho_trick["Outro"])["name"]
@@ -111,7 +118,13 @@ def main(page: ft.Page):
         trick_type = dropdown_type.value
         if name and trick_type:
             video_to_save = selected_video_path if selected_video_path else "No Video"
+            
+            # 1. Thêm vào bộ nhớ RAM tạm thời
             kho_trick[trick_type].append({"name": name, "video": video_to_save})
+            
+            # 2. ĐÃ THÊM: Đồng bộ lưu trữ vĩnh viễn vào máy iPhone
+            page.client_storage.set("kho_trick", kho_trick)
+            
             update_list_view()
             dialog.open = False
             input_name.value = ""
@@ -139,7 +152,6 @@ def main(page: ft.Page):
         ft.Text("POLE DANCE COMBO", size=24, weight=ft.FontWeight.BOLD),
         ft.Divider(height=5, color=ft.Colors.TRANSPARENT),
         
-        # 1. KHU VỰC HIỂN THỊ COMBO NGẪU NHIÊN
         ft.Container(
             content=ft.Column([
                 ft.Text("COMBO HÔM NAY CỦA BẠN:", size=12, color=ft.Colors.WHITE54, weight=ft.FontWeight.BOLD),
@@ -155,18 +167,23 @@ def main(page: ft.Page):
         ),
         ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
         
-        # NÚT BẤM TẠO COMBO (ĐÃ XÓA PADDING GÂY LỖI)
-        ft.ElevatedButton(
-            "XOAY COMBO NGẪU NHIÊN 💃🎲",
-            bgcolor=ft.Colors.PINK_500,
-            color=ft.Colors.WHITE,
-            on_click=generate_random_combo,
-            width=280
+        # NÚT BẤM TẠO COMBO (Căn giữa hoàn hảo bằng Row)
+        ft.Row(
+            controls=[
+                ft.ElevatedButton(
+                    "XOAY COMBO NGẪU NHIÊN 💃🎲",
+                    bgcolor=ft.Colors.PINK_500,
+                    color=ft.Colors.WHITE,
+                    on_click=generate_random_combo,
+                    width=280
+                )
+            ],
+            alignment=ft.MainAxisAlignment.CENTER
         ),
         
         ft.Divider(height=15, color=ft.Colors.WHITE24),
         
-        # NÚT BẤM THÊM TRICK VÀO KHO
+        # NÚT BẤM THÊM TRICK VÀO KHO (Đã được in đậm)
         ft.Row(
             controls=[
                 ft.OutlinedButton(
@@ -174,7 +191,6 @@ def main(page: ft.Page):
                     icon=ft.Icons.ADD,
                     style=ft.ButtonStyle(
                         color=ft.Colors.PINK_300,
-                        # ĐỂ CHỮ IN ĐẬM: Thêm text_style với thuộc tính weight ở đây
                         text_style=ft.TextStyle(weight="bold") 
                     ),
                     on_click=lambda _: setattr(dialog, "open", True) or page.update(),
@@ -185,7 +201,6 @@ def main(page: ft.Page):
         ),
         ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
         
-        # 2. KHU VỰC QUẢN LÝ KHO LƯU TRỮ
         ft.Text("DANH SÁCH ĐÃ LƯU", size=14, color=ft.Colors.WHITE54, weight=ft.FontWeight.BOLD),
         ft.Column([group_intro, group_main, group_outro], spacing=5, width=320)
     )
