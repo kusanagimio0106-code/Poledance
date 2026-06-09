@@ -6,6 +6,17 @@ def main(page: ft.Page):
     page.theme_mode = ft.ThemeMode.DARK
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.scroll = "adaptive"
+
+    # KHÚC THÊM VÀO: Chỉ định hình ảnh làm Icon đại diện cho App PWA trên iPhone
+    page.web_app_manifest = {
+        "icons": [
+            {
+                "src": "icon_app.png",  # Tên file ảnh bạn vừa up lên GitHub
+                "sizes": "512x512",
+                "type": "image/png"
+            }
+        ]
+    }
     
     # 1. KHO DỮ LIỆU GỐC (Đã đồng bộ đúng cấu trúc Intro, Main Trick, Outro)
     kho_trick = {
