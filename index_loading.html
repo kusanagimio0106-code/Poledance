@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href=".%252F">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Pole Dance Notebook">
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Pole Dance">
+  <link rel="apple-touch-icon" href="icons/icon_app.png">
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  
+  <title>Pole Dance Notebook</title>
+  <link rel="manifest" href="manifest.json">
+  
+  <style>
+    /* Định dạng nền đen tuyền và căn ảnh múa cột ra chính giữa màn hình iPhone */
+    body { 
+      background-color: #111111; 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      width: 100vw; 
+      height: 100vh; 
+      overflow: hidden; 
+    }
+    
+    /* Hiệu ứng mượt mà cho ảnh loading của bạn */
+    .loading-img {
+      width: 150px; 
+      height: 150px; 
+      object-fit: contain;
+      border-radius: 16px; /* Bo góc nhẹ cho bức ảnh nhìn sang hơn */
+    }
+  </style>
+</head>
+<body>
+  <img class="loading-img" src="icons/loading-animation.gif" alt="Loading..."/>
+
+  <script src="main.dart.js" type="application/javascript"></script>
+</body>
+</html>
