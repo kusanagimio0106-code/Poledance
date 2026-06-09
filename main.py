@@ -1,6 +1,5 @@
 import flet as ft
 import random
-import json
 
 def main(page: ft.Page):
     page.title = "Pole Dance Notebook"
@@ -8,8 +7,8 @@ def main(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.scroll = "adaptive"
     
-    # 1. KHO DỮ LIỆU MẶC ĐỊNH (Đồng bộ cấu trúc)
-    TRICK_MAC_DINH = {
+    # 1. KHO DỮ LIỆU GỐC (Đã đồng bộ đúng cấu trúc Intro, Main Trick, Outro)
+    kho_trick = {
         "Intro": [
             {"name": "Đi bộ quanh cột", "video": "Walk_around.mp4"},
             {"name": "Xoay hông dạo đầu", "video": "Hip_roll.mp4"},
@@ -25,20 +24,6 @@ def main(page: ft.Page):
             {"name": "Slide xuống nhẹ nhàng", "video": "No Video"}
         ]
     }
-
-    # ĐỌC DỮ LIỆU TỪ BỘ NHỚ MÁY IPHONE
-    kho_trick = {}
-    try:
-        # Thử đọc dữ liệu từ LocalStorage của trình duyệt điện thoại
-        data_saved = page.run_javascript_return("localStorage.getItem('kho_trick');")
-        if data_saved and data_saved != "null":
-            kho_trick = json.loads(data_saved)
-        else:
-            kho_trick = TRICK_MAC_DINH.copy()
-            page.run_javascript(f"localStorage.setItem('kho_trick', '{json.dumps(kho_trick)}');")
-    except Exception:
-        # Nếu có bất kỳ lỗi bảo mật nào, app vẫn chạy bình thường với dữ liệu gốc
-        kho_trick = TRICK_MAC_DINH.copy()
 
     # --- CÁC THÀNH PHẦN HIỂN THỊ DANH SÁCH ---
     group_intro = ft.ExpansionTile(
@@ -61,7 +46,6 @@ def main(page: ft.Page):
         if group_outro.controls is None: group_outro.controls = []
         else: group_outro.controls.clear()
 
-        # Nạp dữ liệu hiển thị (Đồng bộ nhóm dữ liệu)
         for item in kho_trick.get("Intro", []):
             icon_video = ft.Icons.VIDEO_CAMERA_FRONT if item["video"] != "No Video" else ft.Icons.LINK_OFF
             group_intro.controls.append(ft.ListTile(leading=ft.Icon(icon_video, color=ft.Colors.PINK_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD)))
@@ -93,7 +77,7 @@ def main(page: ft.Page):
             txt_combo_main.value = "⚠️ Hãy thêm đủ trick vào cả 3 nhóm trước nhé!"
         page.update()
 
-    # --- GIAO DIỆN POPUP THÊM TRICK (Đã bỏ FilePicker, đổi sang dán link video) ---
+    # --- GIAO DIỆN POPUP THÊM TRICK ---
     input_name = ft.TextField(label="Tên động tác / Trick", hint_text="Ví dụ: Superman...")
     dropdown_type = ft.Dropdown(
         label="Phân loại nhóm",
@@ -107,9 +91,8 @@ def main(page: ft.Page):
         if name and trick_type:
             video_to_save = input_video_link.value if input_video_link.value else "No Video"
             
-            # Thêm vào mảng tạm và ghi đè lưu trữ vĩnh viễn
+            # Thêm trực tiếp vào kho chứa (Đã xóa bỏ hoàn toàn client_storage gây lỗi)
             kho_trick[trick_type].append({"name": name, "video": video_to_save})
-            page.client_storage.set("kho_trick", kho_trick)
             
             update_list_view()
             dialog.open = False
@@ -123,7 +106,7 @@ def main(page: ft.Page):
         content=ft.Column([
             input_name, 
             dropdown_type,
-            input_video_link  # Ô nhập link trực quan
+            input_video_link
         ], tight=True, spacing=15),
         actions=[
             ft.TextButton("Hủy", on_click=lambda _: setattr(dialog, "open", False) or page.update()),
@@ -152,7 +135,7 @@ def main(page: ft.Page):
         ),
         ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
         
-        # NÚT BẤM TẠO COMBO (Row căn giữa)
+        # NÚT XOAY COMBO
         ft.Row(
             controls=[
                 ft.ElevatedButton(
@@ -168,7 +151,7 @@ def main(page: ft.Page):
         
         ft.Divider(height=15, color=ft.Colors.WHITE24),
         
-        # NÚT BẤM THÊM TRICK VÀO KHO (Row căn giữa, in đậm)
+        # NÚT THÊM TRICK
         ft.Row(
             controls=[
                 ft.OutlinedButton(
