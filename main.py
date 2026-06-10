@@ -117,7 +117,7 @@ def main(page: ft.Page):
             txt_combo_main.value = "⚠️ Hãy thêm đủ trick vào cả 3 nhóm trước nhé!"
         page.update()
 
-    # --- ĐÃ SỬA LỖI: Bỏ phần ép kiểu ft.FilePickerResultEvent gây lỗi module ---
+    # --- BỘ CHỌN ẢNH TỪ ĐIỆN THOẠI ---
     def on_file_picker_result(e):
         nonlocal selected_image_data
         if e.files:
@@ -130,7 +130,8 @@ def main(page: ft.Page):
             btn_upload.bgcolor = ft.Colors.PINK_900
         page.update()
 
-    file_picker = ft.FilePicker(on_result=on_file_picker_result)
+    # ĐÃ SỬA CHÍNH XÁC: Đổi 'on_result' thành 'on_change' theo chuẩn Flet mới nhất
+    file_picker = ft.FilePicker(on_change=on_file_picker_result)
     page.overlay.append(file_picker)
 
     # --- GIAO DIỆN POPUP THÊM TRICK ---
