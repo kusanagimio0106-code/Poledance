@@ -6,7 +6,7 @@ import urllib.request
 
 # 🌟 ĐIỀN 2 THÔNG SỐ SUPABASE CỦA BẠN VÀO ĐÂY:
 SUPABASE_URL = "https://acumyjqadlqbyboacqgw.supabase.co"  # Thay bằng URL của bạn
-SUPABASE_KEY = "sb_secret_3plVbQ3CrAjIrOUIP7ZbPQ_vsKACWfN"  # Thay bằng Key của bạn
+SUPABASE_KEY = "sb_publishable_4WUvqixWWaF8eyjU8FIiZg_O-HPtpxS"  # Thay bằng Key của bạn
 
 def main(page: ft.Page):
     page.title = "Pole Dance Notebook"
@@ -21,25 +21,23 @@ def main(page: ft.Page):
         "Outro": [{"name": "Floorwork", "difficulty": 2}]
     }
 
-    # --- CƠ CHẾ ĐỒNG BỘ DỮ LIỆU LÊN MẠNG (SUPABASE REST API) ---
+    # --- CƠ CHẾ ĐỒNG BỘ MỚI CHO GIAO DIỆN SUPABASE PUBLISHABLE KEY ---
     def save_to_storage():
         try:
             json_str = json.dumps(kho_trick, ensure_ascii=False)
-            # Chuẩn bị dữ liệu để lưu đè lên Supabase dưới dạng cặp Key-Value ẩn
             payload = json.dumps({"value": json_str}).encode("utf-8")
             
-            # Sử dụng cơ chế RPC hoặc Storage đơn giản của Supabase thông qua REST API có sẵn
-            # Để đơn giản và không cần tạo bảng phức tạp, tụi mình tận dụng Edge Functions/REST của hệ thống
-            url = f"{SUPABASE_URL}/rest/v1/rpc/set_mask_key" 
-            # Tuy nhiên để không bắt bạn phải chạy SQL tạo hàm, tụi mình sẽ tạo một bảng tên là 'notebook' 
-            # Nhưng để bạn dùng được ngay LẬP TỨC không cần cấu hình bảng, mình dùng một thủ thuật lưu trữ trực tiếp:
-            
-            # (Để tối giản nhất, ta lưu dữ liệu thông qua một bảng mặc định hoặc sử dụng cấu trúc mượt mà dưới đây)
-            # Đoạn này mình đã cấu hình gọi URL chuẩn của Supabase:
+            # Đổi từ dùng RPC sang sửa thẳng vào bảng notebook qua ID=1
             req = urllib.request.Request(
                 f"{SUPABASE_URL}/rest/v1/notebook?id=eq.1",
                 data=payload,
-                headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}", "Content-Type": "application/json", "Prefer": "resolution=merge-dup"}
+                headers={
+                    "apikey": SUPABASE_KEY, 
+                    "Authorization": f"Bearer {SUPABASE_KEY}", 
+                    "Content-Type": "application/json", 
+                    "Prefer": "resolution=merge-dup"
+                },
+                method="POST" # Ép kiểu POST để Supabase hiểu là Update/Insert dữ liệu
             )
             urllib.request.urlopen(req)
         except Exception as ex:
@@ -50,7 +48,10 @@ def main(page: ft.Page):
         try:
             req = urllib.request.Request(
                 f"{SUPABASE_URL}/rest/v1/notebook?id=eq.1&select=value",
-                headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
+                headers={
+                    "apikey": SUPABASE_KEY, 
+                    "Authorization": f"Bearer {SUPABASE_KEY}"
+                }
             )
             with urllib.request.urlopen(req) as response:
                 res_data = json.loads(response.read().decode("utf-8"))
