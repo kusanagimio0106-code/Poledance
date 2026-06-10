@@ -1,6 +1,5 @@
 import flet as ft
 import random
-import time
 import json
 
 def main(page: ft.Page):
@@ -29,7 +28,6 @@ def main(page: ft.Page):
 
     # Màn hình chờ chuyên nghiệp
     page.update()
-    time.sleep(2)
     
     # 1. KHO DỮ LIỆU MẶC ĐỊNH
     kho_trick = {
