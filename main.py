@@ -98,7 +98,7 @@ def main(page: ft.Page):
         page.update()
 
     # --- GIAO DIỆN POPUP THÊM TRICK ---
-    input_name = ft.TextField(label=" Tên động tác", hint_text="Ví dụ: Superman...")
+    input_name = ft.TextField(label="Tên động tác", hint_text="Ví dụ: Superman...")
     dropdown_type = ft.Dropdown(
         label="Nhóm",
         options=[ft.dropdown.Option("Intro"), ft.dropdown.Option("Main Trick"), ft.dropdown.Option("Outro")],
@@ -138,7 +138,7 @@ def main(page: ft.Page):
     # --- GIAO DIỆN CHÍNH ---
     page.add(
         ft.Text("POLE DANCE NOTEBOOK", size=24, weight="bold"),
-        ft.Divider(height=5, color=ft.Colors.TRANSPARENT),  # ĐÃ SỬA LỖI VIẾT THIẾU COLORS
+        ft.Divider(height=5, color=ft.Colors.TRANSPARENT),
         
         # Khung Combo
         ft.Container(
@@ -161,8 +161,8 @@ def main(page: ft.Page):
             on_click=lambda _: setattr(dialog, "open", True) or page.update(), width=220
         ),
         
-        ft.Divider(height=10, color=ft.Colors.TRANSPARENT),  # ĐÃ SỬA LỖI VIẾT THIẾU COLORS
-        ft.Text("KHO TRICK CỦA BẠN", size=14, color=ft.Colors.WHITE54, weight=bold"),
+        ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
+        ft.Text("KHO TRICK CỦA BẠN", size=14, color=ft.Colors.WHITE54, weight="bold"), # ĐÃ SỬA CHÍNH XÁC DẤU NGOẶC KÉP TẠI ĐÂY
         ft.Column([group_intro, group_main, group_outro], spacing=5, width=320)
     )
 
