@@ -1,83 +1,34 @@
 import flet as ft
 import random
-import json
 
 def main(page: ft.Page):
     page.title = "Pole Dance Notebook"
     page.theme_mode = ft.ThemeMode.DARK
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.scroll = "adaptive"
-    page.splash = ft.Container(bgcolor="#111111", expand=True)
 
-    # Cấu hình PWA tiêu chuẩn chống chữ P và giữ icon múa cột của bạn
-    page.web_app_manifest = {
-        "name": "Pole Dance Notebook",
-        "short_name": "Pole Dance",
-        "theme_color": "#e91e63",
-        "background_color": "#111111",
-        "display": "standalone",
-        "icons": [
-            {
-                "src": "icons/icon_app.png",
-                "sizes": "512x512",
-                "type": "image/png",
-                "purpose": "any maskable"
-            }
-        ]
-    }
+    # --- BỘ LƯU TRỮ NATIVE (Đã tối ưu hóa để không bị treo màn hình Connecting) ---
+    if page.client_storage.contains_key("kho_trick_data"):
+        kho_trick = page.client_storage.get("kho_trick_data")
+    else:
+        kho_trick = {
+            "Intro": [
+                {"name": "Đi bộ quanh cột", "difficulty": 1},
+                {"name": "Xoay hông dạo đầu", "difficulty": 1}
+            ],
+            "Main Trick": [
+                {"name": "Superman", "difficulty": 4},
+                {"name": "Scorpio", "difficulty": 3}
+            ],
+            "Outro": [
+                {"name": "Floorwork", "difficulty": 2}
+            ]
+        }
+        page.client_storage.set("kho_trick_data", kho_trick)
 
-    # Màn hình chờ chuyên nghiệp
-    page.update()
-    
-    # 1. KHO DỮ LIỆU MẶC ĐỊNH
-    kho_trick = {
-        "Intro": [
-            {"name": "Đi bộ quanh cột", "difficulty": 1},
-            {"name": "Xoay hông dạo đầu", "difficulty": 1}
-        ],
-        "Main Trick": [
-            {"name": "Superman", "difficulty": 4},
-            {"name": "Scorpio", "difficulty": 3}
-        ],
-        "Outro": [
-            {"name": "Floorwork", "difficulty": 2}
-        ]
-    }
-
-    # --- GIẢI PHÁP LƯU TRỮ TRÊN IPHONE AN TOÀN KHÔNG SẬP NGUỒN ---
+    # Hàm tự động lưu dữ liệu thẳng vào ổ cứng iPhone của App Flet
     def save_to_storage():
-        try:
-            json_str = json.dumps(kho_trick, ensure_ascii=False)
-            # Mã hóa chuỗi để né lỗi ký tự đặc biệt hoặc dấu ngoặc kép khi truyền qua JS
-            import base64
-            b64_str = base64.b64encode(json_str.encode('utf-8')).decode('utf-8')
-            page.run_javascript(f"localStorage.setItem('kho_trick_pwa_b64', '{b64_str}');")
-        except:
-            pass
-
-    def load_from_storage():
-        nonlocal kho_trick
-        try:
-            # Dùng lệnh thực thi có gán ngược kết quả vào tiêu đề trang để Python đọc được ngay lập tức
-            page.run_javascript("""
-                var data = localStorage.getItem('kho_trick_pwa_b64');
-                if(data) { document.title = "LOADED:" + data; }
-            """)
-            # Cho Python nghỉ 0.5 giây để đợi Safari nạp chuỗi vào tiêu đề trang
-            time.sleep(0.5)
-            
-            if page.title.startswith("LOADED:"):
-                b64_str = page.title.replace("LOADED:", "")
-                import base64
-                json_str = base64.b64decode(b64_str.encode('utf-8')).decode('utf-8')
-                kho_trick = json.loads(json_str)
-                # Trả lại tên tiêu đề chuẩn cho app
-                page.title = "Pole Dance Notebook"
-        except:
-            pass
-
-    # Đồng bộ bộ nhớ ngay khi vừa mở app
-    load_from_storage()
+        page.client_storage.set("kho_trick_data", kho_trick)
 
     # Biến tạm phục vụ chỉnh sửa
     editing_trick_info = None
@@ -86,7 +37,7 @@ def main(page: ft.Page):
     def get_star_string(level):
         return "⭐" * int(level)
 
-    # --- HÀM XỬ LÝ XÓA TRICK THEO TÊN CHÍNH XÁC ---
+    # --- HÀM XỬ LÝ XÓA TRICK ---
     def delete_trick(category, trick_item):
         for index, item in enumerate(kho_trick[category]):
             if item["name"] == trick_item["name"]:
@@ -114,7 +65,6 @@ def main(page: ft.Page):
         group_main.controls = []
         group_outro.controls = []
 
-        # Các hàm bọc cô lập dữ liệu chống lỗi lưu cache biến của Python vòng lặp
         def make_delete_callback(cat, it):
             return lambda e: delete_trick(cat, it)
 
@@ -133,7 +83,7 @@ def main(page: ft.Page):
                 ], tight=True, spacing=0)
             ))
             
-        # Nạp danh sách Main Trick (ĐÃ VÁ LỖI SAI NHÓM CHÍNH XÁC)
+        # Nạp danh sách Main Trick
         for item in kho_trick["Main Trick"]:
             group_main.controls.append(ft.ListTile(
                 title=ft.Text(item["name"], weight="bold"),
@@ -145,7 +95,7 @@ def main(page: ft.Page):
                 ], tight=True, spacing=0)
             ))
             
-        # Nạp danh sách Outro (ĐÃ VÁ LỖI SAI NHÓM CHÍNH XÁC)
+        # Nạp danh sách Outro
         for item in kho_trick["Outro"]:
             group_outro.controls.append(ft.ListTile(
                 title=ft.Text(item["name"], weight="bold"),
