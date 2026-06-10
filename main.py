@@ -20,13 +20,13 @@ def main(page: ft.Page):
         "Outro": [{"name": "Floorwork", "difficulty": 2}]
     }
 
-    # --- CƠ CHẾ ĐỒNG BỘ MẠNG TỐI ƯU CHO WEB-APP SAFARI ---
+    # --- CƠ CHẾ ĐỒNG BỘ ÉP PHƯƠNG THỨC XUYÊN TƯỜNG LỬA SAFARI ---
     def save_to_storage():
         try:
             json_str = json.dumps(kho_trick, ensure_ascii=False)
             payload = json.dumps({"value": json_str}).encode("utf-8")
             
-            # Gửi lệnh PATCH đè lên ID=1, bổ sung các Header bảo mật bắt buộc của Supabase
+            # Dùng POST kết hợp X-HTTP-Method-Override để lách qua bộ lọc CORS của iOS
             req = urllib.request.Request(
                 f"{SUPABASE_URL}/rest/v1/notebook?id=eq.1",
                 data=payload,
@@ -34,9 +34,10 @@ def main(page: ft.Page):
                     "apikey": SUPABASE_KEY, 
                     "Authorization": f"Bearer {SUPABASE_KEY}", 
                     "Content-Type": "application/json",
-                    "Prefer": "return=representation"  # Ép Supabase xử lý và phản hồi kết quả
+                    "X-HTTP-Method-Override": "PATCH", # Mẹo ép hệ thống hiểu là lệnh Sửa
+                    "Prefer": "resolution=merge-dup"   # Nếu trùng ID=1 thì ghi đè lên luôn
                 },
-                method="PATCH"
+                method="POST" # Ép trình duyệt gửi đi bằng POST (Safari rất thích điều này)
             )
             urllib.request.urlopen(req)
         except Exception as ex:
