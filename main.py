@@ -1,7 +1,7 @@
 import flet as ft
 import random
 import json
-import urllib.request
+import urllib.parse
 
 # 🌟 THÔNG SỐ CỦA BẠN:
 SUPABASE_URL = "https://acumyjqadlqbyboacqgw.supabase.co" 
@@ -20,51 +20,67 @@ def main(page: ft.Page):
         "Outro": [{"name": "Floorwork", "difficulty": 2}]
     }
 
-    # --- CƠ CHẾ ĐỒNG BỘ ÉP PHƯƠNG THỨC XUYÊN TƯỜNG LỬA SAFARI ---
+    # --- CƠ CHẾ ĐỒNG BỘ BẰNG JAVASCRIPT GỐC (BẤT TỬ TRÊN SAFARI IPHONE) ---
     def save_to_storage():
         try:
             json_str = json.dumps(kho_trick, ensure_ascii=False)
-            payload = json.dumps({"value": json_str}).encode("utf-8")
+            # Mã hóa chuỗi để an toàn khi truyền vào câu lệnh JS
+            encoded_val = urllib.parse.quote(json_str)
             
-            # Dùng POST kết hợp X-HTTP-Method-Override để lách qua bộ lọc CORS của iOS
-            req = urllib.request.Request(
-                f"{SUPABASE_URL}/rest/v1/notebook?id=eq.1",
-                data=payload,
-                headers={
-                    "apikey": SUPABASE_KEY, 
-                    "Authorization": f"Bearer {SUPABASE_KEY}", 
+            # Ép Safari chạy lệnh fetch() gốc của trình duyệt - Chống chặn CORS tuyệt đối
+            js_script = f"""
+            fetch("{SUPABASE_URL}/rest/v1/notebook?id=eq.1", {{
+                method: "POST",
+                headers: {{
+                    "apikey": "{SUPABASE_KEY}",
+                    "Authorization": "Bearer {SUPABASE_KEY}",
                     "Content-Type": "application/json",
-                    "X-HTTP-Method-Override": "PATCH", # Mẹo ép hệ thống hiểu là lệnh Sửa
-                    "Prefer": "resolution=merge-dup"   # Nếu trùng ID=1 thì ghi đè lên luôn
-                },
-                method="POST" # Ép trình duyệt gửi đi bằng POST (Safari rất thích điều này)
-            )
-            urllib.request.urlopen(req)
+                    "X-HTTP-Method-Override": "PATCH",
+                    "Prefer": "resolution=merge-dup"
+                }},
+                body: JSON.stringify({{ value: decodeURIComponent("{encoded_val}") }})
+            }}).catch(err => console.log(err));
+            """
+            page.run_javascript(js_script)
         except Exception as ex:
-            print("Lỗi lưu database:", ex)
+            print("Lỗi lưu:", ex)
 
     def load_from_storage():
         nonlocal kho_trick
         try:
-            req = urllib.request.Request(
-                f"{SUPABASE_URL}/rest/v1/notebook?id=eq.1&select=value",
-                headers={
-                    "apikey": SUPABASE_KEY, 
-                    "Authorization": f"Bearer {SUPABASE_KEY}"
-                }
-            )
-            with urllib.request.urlopen(req) as response:
-                res_data = json.loads(response.read().decode("utf-8"))
-                if res_data and len(res_data) > 0:
-                    json_str = res_data[0]["value"]
-                    kho_trick = json.loads(json_str)
+            # Gọi lệnh JS lấy dữ liệu và gán tạm vào tiêu đề trang để Python đọc được
+            js_script = f"""
+            fetch("{SUPABASE_URL}/rest/v1/notebook?id=eq.1&select=value", {{
+                method: "GET",
+                headers: {{
+                    "apikey": "{SUPABASE_KEY}",
+                    "Authorization": "Bearer {SUPABASE_KEY}"
+                }}
+            }})
+            .then(res => res.json())
+            .then(data => {{
+                if(data && data.length > 0) {{
+                    document.title = "ONLINE_DATA:" + encodeURIComponent(data[0].value);
+                }}
+            }}).catch(err => console.log(err));
+            """
+            page.run_javascript(js_script)
+            
+            import time
+            time.sleep(0.5) # Cho iPhone 0.5 giây để kéo dữ liệu từ mạng về
+            
+            if page.title.startswith("ONLINE_DATA:"):
+                raw_val = page.title.replace("ONLINE_DATA:", "")
+                json_str = urllib.parse.unquote(raw_val)
+                kho_trick = json.loads(json_str)
+                page.title = "Pole Dance Notebook" # Trả lại tiêu đề chuẩn
         except Exception as ex:
-            print("Lỗi tải database:", ex)
+            print("Lỗi tải:", ex)
 
-    # Tải dữ liệu từ mạng về máy khi vừa mở app
+    # Kích hoạt tải dữ liệu trực tuyến từ Supabase
     load_from_storage()
 
-    # --- TOÀN BỘ GIAO DIỆN CHỨC NĂNG CỦA BẠN ---
+    # --- TOÀN BỘ GIAO DIỆN CHỨC NĂNG CỦA BẠN (GIỮ NGUYÊN) ---
     editing_trick_info = None
     def get_star_string(level): return "⭐" * int(level)
 
@@ -196,7 +212,7 @@ def main(page: ft.Page):
             padding=15, border_radius=12, bgcolor=ft.Colors.WHITE10, width=320
         ),
         ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
-        ft.ElevatedButton("Thử một combo ngẫu nhiên 🎲", bgcolor=ft.Colors.PINK_500, color=ft.Colors.WHITE, on_click=generate_random_combo, width=280),
+        ft.ElevatedButton("Nay đi combo nào? 🎲", bgcolor=ft.Colors.PINK_500, color=ft.Colors.WHITE, on_click=generate_random_combo, width=280),
         ft.Divider(height=15, color=ft.Colors.WHITE24),
         ft.OutlinedButton("THÊM TRICK MỚI", icon=ft.Icons.ADD, style=ft.ButtonStyle(color=ft.Colors.PINK_300), on_click=lambda _: setattr(dialog, "open", True) or page.update(), width=220),
         ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
