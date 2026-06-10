@@ -130,8 +130,9 @@ def main(page: ft.Page):
             btn_upload.bgcolor = ft.Colors.PINK_900
         page.update()
 
-    # ĐÃ SỬA CHÍNH XÁC: Đổi 'on_result' thành 'on_change' theo chuẩn Flet mới nhất
-    file_picker = ft.FilePicker(on_change=on_file_picker_result)
+    # ĐÃ SỬA: Tạo đối tượng rỗng trước, gán hàm xử lý sau bằng dòng riêng biệt để né lỗi __init__
+    file_picker = ft.FilePicker()
+    file_picker.on_result = on_file_picker_result
     page.overlay.append(file_picker)
 
     # --- GIAO DIỆN POPUP THÊM TRICK ---
