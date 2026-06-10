@@ -30,7 +30,6 @@ def main(page: ft.Page):
     time.sleep(2)
     
     # 1. KHỞI TẠO HOẶC NẠP DỮ LIỆU TỪ BỘ NHỚ IPHONE ---
-    # Nếu máy đã có dữ liệu thì nạp ra, nếu chưa có (lần đầu mở app) thì lấy dữ liệu mặc định
     if page.storage.local.contains_key("kho_trick_data"):
         kho_trick = page.storage.local.get("kho_trick_data")
     else:
@@ -62,13 +61,12 @@ def main(page: ft.Page):
 
     # --- HÀM XỬ LÝ XÓA TRICK ---
     def delete_trick(category, trick_item):
-        # Tìm vị trí của trick có tên trùng khớp trong nhóm
         for index, item in enumerate(kho_trick[category]):
             if item["name"] == trick_item["name"]:
-                kho_trick[category].pop(index) # Xóa phần tử tại vị trí đó
+                kho_trick[category].pop(index)
                 break
-        save_to_storage() # Lưu lại vào bộ nhớ iPhone
-        update_list_view() # Cập nhật giao diện
+        save_to_storage()
+        update_list_view()
 
     # --- HÀM XỬ LÝ MỞ POPUP SỬA TRICK ---
     def open_edit_dialog(category, trick_item):
@@ -98,34 +96,39 @@ def main(page: ft.Page):
         def make_edit_callback(cat, it):
             return lambda e: open_edit_dialog(cat, it)
 
+        # Nạp danh sách Intro
         for item in kho_trick["Intro"]:
             group_intro.controls.append(ft.ListTile(
                 title=ft.Text(item["name"], weight="bold"),
                 subtitle=ft.Text(get_star_string(item["difficulty"]), color=ft.Colors.YELLOW_400),
                 leading=ft.Icon(ft.Icons.PLAY_ARROW_ROUNDED, color=ft.Colors.PINK_300),
                 trailing=ft.Row([
-                    ft.IconButton(icon=ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18, on_click=lambda e, cat="Intro", it=item: open_edit_dialog(cat, it)),
-                    ft.IconButton(icon=ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18, on_click=lambda e, cat="Intro", it=item: delete_trick(cat, it))
+                    ft.IconButton(icon=ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18, on_click=make_edit_callback("Intro", item)),
+                    ft.IconButton(icon=ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18, on_click=make_delete_callback("Intro", item))
                 ], tight=True, spacing=0)
             ))
+            
+        # Nạp danh sách Main Trick
         for item in kho_trick["Main Trick"]:
             group_main.controls.append(ft.ListTile(
                 title=ft.Text(item["name"], weight="bold"),
                 subtitle=ft.Text(get_star_string(item["difficulty"]), color=ft.Colors.YELLOW_400),
                 leading=ft.Icon(ft.Icons.DIAMOND_OUTLINED, color=ft.Colors.PURPLE_300),
                 trailing=ft.Row([
-                    ft.IconButton(icon=ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18, on_click=lambda e, cat="Intro", it=item: open_edit_dialog(cat, it)),
-                    ft.IconButton(icon=ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18, on_click=lambda e, cat="Intro", it=item: delete_trick(cat, it))
+                    ft.IconButton(icon=ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18, on_click=make_edit_callback("Main Trick", item)),
+                    ft.IconButton(icon=ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18, on_click=make_delete_callback("Main Trick", item))
                 ], tight=True, spacing=0)
             ))
+            
+        # Nạp danh sách Outro
         for item in kho_trick["Outro"]:
             group_outro.controls.append(ft.ListTile(
                 title=ft.Text(item["name"], weight="bold"),
                 subtitle=ft.Text(get_star_string(item["difficulty"]), color=ft.Colors.YELLOW_400),
                 leading=ft.Icon(ft.Icons.FLAG_OUTLINED, color=ft.Colors.BLUE_300),
                 trailing=ft.Row([
-                    ft.IconButton(icon=ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18, on_click=lambda e, cat="Intro", it=item: open_edit_dialog(cat, it)),
-                    ft.IconButton(icon=ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18, on_click=lambda e, cat="Intro", it=item: delete_trick(cat, it))
+                    ft.IconButton(icon=ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18, on_click=make_edit_callback("Outro", item)),
+                    ft.IconButton(icon=ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18, on_click=make_delete_callback("Outro", item))
                 ], tight=True, spacing=0)
             ))
         page.update()
@@ -154,7 +157,6 @@ def main(page: ft.Page):
         label="Nhóm",
         options=[ft.dropdown.Option("Intro"), ft.dropdown.Option("Main Trick"), ft.dropdown.Option("Outro")],
     )
-    # Thanh chọn độ khó từ 1 đến 5
     slider_diff = ft.Slider(min=1, max=5, divisions=4, label="Độ khó: {value} sao", value=3, active_color=ft.Colors.YELLOW_700)
 
     def save_trick(e):
@@ -166,7 +168,6 @@ def main(page: ft.Page):
             save_to_storage()
             update_list_view()
             dialog.open = False
-            # Reset form
             input_name.value = ""
             dropdown_type.value = None
             slider_diff.value = 3
@@ -197,10 +198,9 @@ def main(page: ft.Page):
             category = editing_trick_info["category"]
             old_item = editing_trick_info["item"]
             
-            # Cập nhật thông tin mới vào dữ liệu gốc
             old_item["name"] = input_edit_name.value
             old_item["difficulty"] = int(slider_edit_diff.value)
-            
+            save_to_storage()
             update_list_view()
             edit_dialog.open = False
             editing_trick_info = None
@@ -247,7 +247,7 @@ def main(page: ft.Page):
         ),
         
         ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
-        ft.Text("KHO TRICK CỦA BẠN", size=14, color=ft.Colors.WHITE54, weight="bold"), # ĐÃ SỬA CHÍNH XÁC DẤU NGOẶC KÉP TẠI ĐÂY
+        ft.Text("KHO TRICK CỦA BẠN", size=14, color=ft.Colors.WHITE54, weight="bold"),
         ft.Column([group_intro, group_main, group_outro], spacing=5, width=320)
     )
 
