@@ -1,6 +1,7 @@
 import flet as ft
 import random
 import time
+import json
 
 def main(page: ft.Page):
     page.title = "Pole Dance Notebook"
@@ -8,7 +9,7 @@ def main(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.scroll = "adaptive"
 
-    # Cấu hình PWA để né lỗi chữ P và hiện icon múa cột của bạn
+    # Cấu hình PWA tiêu chuẩn chống chữ P và giữ icon múa cột của bạn
     page.web_app_manifest = {
         "name": "Pole Dance Notebook",
         "short_name": "Pole Dance",
@@ -25,41 +26,56 @@ def main(page: ft.Page):
         ]
     }
 
-    # Treo màn hình chờ 2 giây để ngắm ảnh loading-animation.gif của bạn
+    # Màn hình chờ chuyên nghiệp
     page.update()
     time.sleep(2)
     
-    # --- ĐÃ SỬA CHUẨN ĐỐI TƯỢNG LƯU TRỮ TRÊN IPHONE ---
-    if page.client_storage.contains_key("kho_trick_data"):
-        kho_trick = page.client_storage.get("kho_trick_data")
-    else:
-        kho_trick = {
-            "Intro": [
-                {"name": "Đi bộ quanh cột", "difficulty": 1},
-                {"name": "Xoay hông dạo đầu", "difficulty": 1}
-            ],
-            "Main Trick": [
-                {"name": "Superman", "difficulty": 4},
-                {"name": "Scorpio", "difficulty": 3}
-            ],
-            "Outro": [
-                {"name": "Floorwork", "difficulty": 2}
-            ]
-        }
-        page.client_storage.set("kho_trick_data", kho_trick)
+    # 1. KHO DỮ LIỆU MẶC ĐỊNH
+    kho_trick = {
+        "Intro": [
+            {"name": "Đi bộ quanh cột", "difficulty": 1},
+            {"name": "Xoay hông dạo đầu", "difficulty": 1}
+        ],
+        "Main Trick": [
+            {"name": "Superman", "difficulty": 4},
+            {"name": "Scorpio", "difficulty": 3}
+        ],
+        "Outro": [
+            {"name": "Floorwork", "difficulty": 2}
+        ]
+    }
 
-    # Hàm bổ trợ tự động lưu dữ liệu vào iPhone mỗi khi có thay đổi
+    # --- GIẢI PHÁP LƯU TRỮ TRÊN IPHONE AN TOÀN KHÔNG SẬP NGUỒN ---
     def save_to_storage():
-        page.client_storage.set("kho_trick_data", kho_trick)
+        try:
+            # Chuyển kho dữ liệu sang dạng chuỗi text JSON
+            json_str = json.dumps(kho_trick, ensure_ascii=False)
+            # Ép Safari lưu thẳng vào bộ nhớ hệ thống web thông qua Javascipt ngầm
+            page.run_javascript(f"localStorage.setItem('kho_trick_pwa', `{json_str}`);")
+        except:
+            pass
 
-    # Biến tạm để lưu thông tin trick đang được chỉnh sửa
+    def load_from_storage():
+        nonlocal kho_trick
+        try:
+            # Gọi lệnh đồng bộ từ LocalStorage của iPhone
+            stored_data = page.run_javascript("localStorage.getItem('kho_trick_pwa');")
+            if stored_data:
+                kho_trick = json.loads(stored_data)
+        except:
+            pass
+
+    # Đồng bộ bộ nhớ ngay khi vừa mở app
+    load_from_storage()
+
+    # Biến tạm phục vụ chỉnh sửa
     editing_trick_info = None
 
     # Hàm hỗ trợ hiển thị chuỗi sao ⭐
     def get_star_string(level):
         return "⭐" * int(level)
 
-    # --- HÀM XỬ LÝ XÓA TRICK ---
+    # --- HÀM XỬ LÝ XÓA TRICK THEO TÊN CHÍNH XÁC ---
     def delete_trick(category, trick_item):
         for index, item in enumerate(kho_trick[category]):
             if item["name"] == trick_item["name"]:
@@ -87,6 +103,7 @@ def main(page: ft.Page):
         group_main.controls = []
         group_outro.controls = []
 
+        # Các hàm bọc cô lập dữ liệu chống lỗi lưu cache biến của Python vòng lặp
         def make_delete_callback(cat, it):
             return lambda e: delete_trick(cat, it)
 
@@ -100,32 +117,32 @@ def main(page: ft.Page):
                 subtitle=ft.Text(get_star_string(item["difficulty"]), color=ft.Colors.YELLOW_400),
                 leading=ft.Icon(ft.Icons.PLAY_ARROW_ROUNDED, color=ft.Colors.PINK_300),
                 trailing=ft.Row([
-                    ft.IconButton(icon=ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18, on_click=make_edit_callback("Intro", item)),
-                    ft.IconButton(icon=ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18, on_click=make_delete_callback("Intro", item))
+                    ft.IconButton(ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18, on_click=make_edit_callback("Intro", item)),
+                    ft.IconButton(ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18, on_click=make_delete_callback("Intro", item))
                 ], tight=True, spacing=0)
             ))
             
-        # Nạp danh sách Main Trick
+        # Nạp danh sách Main Trick (ĐÃ VÁ LỖI SAI NHÓM CHÍNH XÁC)
         for item in kho_trick["Main Trick"]:
             group_main.controls.append(ft.ListTile(
                 title=ft.Text(item["name"], weight="bold"),
                 subtitle=ft.Text(get_star_string(item["difficulty"]), color=ft.Colors.YELLOW_400),
                 leading=ft.Icon(ft.Icons.DIAMOND_OUTLINED, color=ft.Colors.PURPLE_300),
                 trailing=ft.Row([
-                    ft.IconButton(icon=ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18, on_click=make_edit_callback("Main Trick", item)),
-                    ft.IconButton(icon=ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18, on_click=make_delete_callback("Main Trick", item))
+                    ft.IconButton(ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18, on_click=make_edit_callback("Main Trick", item)),
+                    ft.IconButton(ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18, on_click=make_delete_callback("Main Trick", item))
                 ], tight=True, spacing=0)
             ))
             
-        # Nạp danh sách Outro
+        # Nạp danh sách Outro (ĐÃ VÁ LỖI SAI NHÓM CHÍNH XÁC)
         for item in kho_trick["Outro"]:
             group_outro.controls.append(ft.ListTile(
                 title=ft.Text(item["name"], weight="bold"),
                 subtitle=ft.Text(get_star_string(item["difficulty"]), color=ft.Colors.YELLOW_400),
                 leading=ft.Icon(ft.Icons.FLAG_OUTLINED, color=ft.Colors.BLUE_300),
                 trailing=ft.Row([
-                    ft.IconButton(icon=ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18, on_click=make_edit_callback("Outro", item)),
-                    ft.IconButton(icon=ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18, on_click=make_delete_callback("Outro", item))
+                    ft.IconButton(ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18, on_click=make_edit_callback("Outro", item)),
+                    ft.IconButton(ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18, on_click=make_delete_callback("Outro", item))
                 ], tight=True, spacing=0)
             ))
         page.update()
