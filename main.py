@@ -31,9 +31,8 @@ def main(page: ft.Page):
     
     # 1. KHỞI TẠO HOẶC NẠP DỮ LIỆU TỪ BỘ NHỚ IPHONE ---
     # Nếu máy đã có dữ liệu thì nạp ra, nếu chưa có (lần đầu mở app) thì lấy dữ liệu mặc định
-    if page.client_storage.contains_key("kho_trick_data"):
-        import json
-        kho_trick = page.client_storage.get("kho_trick_data")
+    if page.storage.local.contains_key("kho_trick_data"):
+        kho_trick = page.storage.local.get("kho_trick_data")
     else:
         kho_trick = {
             "Intro": [
@@ -48,11 +47,11 @@ def main(page: ft.Page):
                 {"name": "Floorwork", "difficulty": 2}
             ]
         }
-        page.client_storage.set("kho_trick_data", kho_trick)
+        page.storage.local.set("kho_trick_data", kho_trick)
 
     # Hàm bổ trợ tự động lưu dữ liệu vào iPhone mỗi khi có thay đổi
     def save_to_storage():
-        page.client_storage.set("kho_trick_data", kho_trick)
+        page.storage.local.set("kho_trick_data", kho_trick)
 
     # Biến tạm để lưu thông tin trick đang được chỉnh sửa
     editing_trick_info = None
