@@ -8,6 +8,7 @@ def main(page: ft.Page):
     page.theme_mode = ft.ThemeMode.DARK
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.scroll = "adaptive"
+    page.splash = ft.Container(bgcolor="#111111", expand=True)
 
     # Cấu hình PWA tiêu chuẩn chống chữ P và giữ icon múa cột của bạn
     page.web_app_manifest = {
