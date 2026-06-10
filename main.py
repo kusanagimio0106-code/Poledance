@@ -97,8 +97,8 @@ def main(page: ft.Page):
             txt_combo_main.value = "⚠️ Hãy thêm đủ trick vào 3 nhóm!"
         page.update()
 
-    # --- GIAO DIỆN POPUP THÊM TRICK (Đã bỏ nút ảnh, thêm sao ⭐) ---
-    input_name = ft.TextField(label="Tên động tác", hint_text="Ví dụ: Superman...")
+    # --- GIAO DIỆN POPUP THÊM TRICK ---
+    input_name = ft.TextField(label=" Tên động tác", hint_text="Ví dụ: Superman...")
     dropdown_type = ft.Dropdown(
         label="Nhóm",
         options=[ft.dropdown.Option("Intro"), ft.dropdown.Option("Main Trick"), ft.dropdown.Option("Outro")],
@@ -138,7 +138,7 @@ def main(page: ft.Page):
     # --- GIAO DIỆN CHÍNH ---
     page.add(
         ft.Text("POLE DANCE NOTEBOOK", size=24, weight="bold"),
-        ft.Divider(height=5, color=ft.TRANSPARENT),
+        ft.Divider(height=5, color=ft.Colors.TRANSPARENT),  # ĐÃ SỬA LỖI VIẾT THIẾU COLORS
         
         # Khung Combo
         ft.Container(
@@ -148,6 +148,7 @@ def main(page: ft.Page):
             ], spacing=8),
             padding=15, border_radius=12, bgcolor=ft.Colors.WHITE10, width=320
         ),
+        ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
         
         ft.ElevatedButton("XOAY COMBO NGẪU NHIÊN 🎲", bgcolor=ft.Colors.PINK_500, color=ft.Colors.WHITE, on_click=generate_random_combo, width=280),
         
@@ -160,8 +161,8 @@ def main(page: ft.Page):
             on_click=lambda _: setattr(dialog, "open", True) or page.update(), width=220
         ),
         
-        ft.Divider(height=10, color=ft.TRANSPARENT),
-        ft.Text("KHO TRICK CỦA BẠN", size=14, color=ft.Colors.WHITE54, weight="bold"),
+        ft.Divider(height=10, color=ft.Colors.TRANSPARENT),  # ĐÃ SỬA LỖI VIẾT THIẾU COLORS
+        ft.Text("KHO TRICK CỦA BẠN", size=14, color=ft.Colors.WHITE54, weight=bold"),
         ft.Column([group_intro, group_main, group_outro], spacing=5, width=320)
     )
 
