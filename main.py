@@ -59,12 +59,21 @@ def main(page: ft.Page):
     def load_from_storage():
         nonlocal kho_trick
         try:
-            # Gọi lệnh đồng bộ từ LocalStorage của iPhone
-            b64_str = page.run_javascript_async("localStorage.getItem('kho_trick_pwa_b64');")
-            if b64_str:
+            # Dùng lệnh thực thi có gán ngược kết quả vào tiêu đề trang để Python đọc được ngay lập tức
+            page.run_javascript("""
+                var data = localStorage.getItem('kho_trick_pwa_b64');
+                if(data) { document.title = "LOADED:" + data; }
+            """)
+            # Cho Python nghỉ 0.5 giây để đợi Safari nạp chuỗi vào tiêu đề trang
+            time.sleep(0.5)
+            
+            if page.title.startswith("LOADED:"):
+                b64_str = page.title.replace("LOADED:", "")
                 import base64
                 json_str = base64.b64decode(b64_str.encode('utf-8')).decode('utf-8')
                 kho_trick = json.loads(json_str)
+                # Trả lại tên tiêu đề chuẩn cho app
+                page.title = "Pole Dance Notebook"
         except:
             pass
 
