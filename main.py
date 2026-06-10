@@ -29,9 +29,9 @@ def main(page: ft.Page):
     page.update()
     time.sleep(2)
     
-    # 1. KHỞI TẠO HOẶC NẠP DỮ LIỆU TỪ BỘ NHỚ IPHONE ---
-    if page.storage.local.contains_key("kho_trick_data"):
-        kho_trick = page.storage.local.get("kho_trick_data")
+    # --- ĐÃ SỬA CHUẨN ĐỐI TƯỢNG LƯU TRỮ TRÊN IPHONE ---
+    if page.client_storage.contains_key("kho_trick_data"):
+        kho_trick = page.client_storage.get("kho_trick_data")
     else:
         kho_trick = {
             "Intro": [
@@ -46,11 +46,11 @@ def main(page: ft.Page):
                 {"name": "Floorwork", "difficulty": 2}
             ]
         }
-        page.storage.local.set("kho_trick_data", kho_trick)
+        page.client_storage.set("kho_trick_data", kho_trick)
 
     # Hàm bổ trợ tự động lưu dữ liệu vào iPhone mỗi khi có thay đổi
     def save_to_storage():
-        page.storage.local.set("kho_trick_data", kho_trick)
+        page.client_storage.set("kho_trick_data", kho_trick)
 
     # Biến tạm để lưu thông tin trick đang được chỉnh sửa
     editing_trick_info = None
@@ -83,16 +83,13 @@ def main(page: ft.Page):
     group_outro = ft.ExpansionTile(title=ft.Text("Outro 🏁", size=18, weight="bold", color=ft.Colors.BLUE_300))
 
     def update_list_view():
-        # Xoá cũ nạp mới
         group_intro.controls = []
         group_main.controls = []
         group_outro.controls = []
 
-        # Hàm bổ trợ tạo hành động xóa chính xác từng item (Tránh lỗi lưu biến của Python)
         def make_delete_callback(cat, it):
             return lambda e: delete_trick(cat, it)
 
-        # Hàm bổ trợ tạo hành động sửa chính xác từng item
         def make_edit_callback(cat, it):
             return lambda e: open_edit_dialog(cat, it)
 
