@@ -5,7 +5,7 @@ import urllib.request
 
 # 🌟 THÔNG SỐ CHUẨN ĐÃ XÁC THỰC CỦA BẠN:
 SUPABASE_URL = "https://acumyjqadlqbyboacqgw.supabase.co" 
-SUPABASE_KEY = "sb_publishable_4WUvqi..." # Bạn dán cái mã dài loằng ngoằng lấy ở bước trước vào đây nhé
+SUPABASE_KEY = "sb_publishable_4WUvqixWWaF8eyjU8FIiZg_O-HPtpxS" # Bạn dán cái mã dài loằng ngoằng lấy ở bước trước vào đây nhé
 
 def main(page: ft.Page):
     page.title = "Pole Dance Notebook"
