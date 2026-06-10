@@ -67,21 +67,21 @@ def main(page: ft.Page):
 
         for item in kho_trick.get("Intro", []):
             if item["image"]:
-                trailing_widget = ft.Image(src="icons/icon_app.png", src_base64=item["image"], width=40, height=40, border_radius=5)
+                trailing_widget = ft.Image(src="icons/icon_app.png", src_base_64=item["image"], width=40, height=40, border_radius=5)
             else:
                 trailing_widget = ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
             group_intro.controls.append(ft.ListTile(leading=ft.Icon(ft.Icons.STAR_BORDER, color=ft.Colors.PINK_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD), trailing=trailing_widget))
 
         for item in kho_trick.get("Main Trick", []):
             if item["image"]:
-                trailing_widget = ft.Image(src="icons/icon_app.png", src_base64=item["image"], width=40, height=40, border_radius=5)
+                trailing_widget = ft.Image(src="icons/icon_app.png", src_base_64=item["image"], width=40, height=40, border_radius=5)
             else:
                 trailing_widget = ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
             group_main.controls.append(ft.ListTile(leading=ft.Icon(ft.Icons.STAR_BORDER, color=ft.Colors.PURPLE_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD), trailing=trailing_widget))
 
         for item in kho_trick.get("Outro", []):
             if item["image"]:
-                trailing_widget = ft.Image(src="icons/icon_app.png", src_base64=item["image"], width=40, height=40, border_radius=5)
+                trailing_widget = ft.Image(src="icons/icon_app.png", src_base_64=item["image"], width=40, height=40, border_radius=5)
             else:
                 trailing_widget = ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED, color=ft.Colors.WHITE24)
             group_outro.controls.append(ft.ListTile(leading=ft.Icon(ft.Icons.STAR_BORDER, color=ft.Colors.BLUE_300), title=ft.Text(item["name"], weight=ft.FontWeight.BOLD), trailing=trailing_widget))
@@ -103,7 +103,7 @@ def main(page: ft.Page):
             trick_outro = random.choice(kho_trick["Outro"])
             
             txt_combo_intro.value = f"🎬 {trick_intro['name']}"
-            if trick_intro["image"]: img_preview_intro.src_base64 = trick_intro["image"]; img_preview_intro.visible = True
+            if trick_intro["image"]: img_preview_intro.src_base_64 = trick_intro["image"]; img_preview_intro.visible = True
             else: img_preview_intro.visible = False
                 
             txt_combo_main.value = f"💎 {trick_main['name']}"
@@ -130,8 +130,8 @@ def main(page: ft.Page):
             btn_upload.bgcolor = ft.Colors.PINK_900
         page.update()
 
-    # SỬA CHUẨN XỊN: Dùng thuộc tính visible=False để tàng hình chuẩn Web, không lo Safari chặn
-    file_picker = ft.FilePicker(visible=False)
+    # ĐÃ SỬA CHUẨN NGUYÊN BẢN: Khởi tạo sạch sẽ không chứa tham số thừa gây lỗi
+    file_picker = ft.FilePicker()
     file_picker.on_result = on_file_picker_result
     page.overlay.append(file_picker)
 
@@ -198,7 +198,7 @@ def main(page: ft.Page):
         # NÚT XOAY COMBO
         ft.Row(
             controls=[
-                ft.ElevatedButton("XOAY COMBO NGẪU NHIÊN 💃🎲", bgcolor=ft.Colors.PINK_500, color=ft.Colors.WHITE, on_click=generate_random_combo, width=280)
+                ft.ElevatedButton("CHỌN COMBO NGẪU NHIÊN 💃🎲", bgcolor=ft.Colors.PINK_500, color=ft.Colors.WHITE, on_click=generate_random_combo, width=280)
             ],
             alignment=ft.MainAxisAlignment.CENTER
         ),
