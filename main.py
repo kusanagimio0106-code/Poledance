@@ -3,9 +3,9 @@ import random
 import json
 import urllib.request
 
-# 🌟 THÔNG SỐ CHUẨN ĐÃ XÁC THỰC CỦA BẠN:
+# 🌟 THÔNG SỐ CỦA BẠN:
 SUPABASE_URL = "https://acumyjqadlqbyboacqgw.supabase.co" 
-SUPABASE_KEY = "sb_publishable_4WUvqixWWaF8eyjU8FIiZg_O-HPtpxS" # Bạn dán cái mã dài loằng ngoằng lấy ở bước trước vào đây nhé
+SUPABASE_KEY = "sb_publishable_4WUvqixWWaF8eyjU8FIiZg_O-HPtpxS" # <--- BẮT BUỘC: Bạn hãy dán toàn bộ chuỗi key siêu dài của bạn vào đây
 
 def main(page: ft.Page):
     page.title = "Pole Dance Notebook"
@@ -20,20 +20,21 @@ def main(page: ft.Page):
         "Outro": [{"name": "Floorwork", "difficulty": 2}]
     }
 
-    # --- ĐỒNG BỘ DỮ LIỆU ĐÁM MÂY QUA ID=1 ---
+    # --- CƠ CHẾ ĐỒNG BỘ MẠNG TỐI ƯU CHO WEB-APP SAFARI ---
     def save_to_storage():
         try:
             json_str = json.dumps(kho_trick, ensure_ascii=False)
             payload = json.dumps({"value": json_str}).encode("utf-8")
             
-            # Sử dụng lệnh PATCH để sửa đổi trực tiếp vào dòng ID=1 có sẵn trên mạng
+            # Gửi lệnh PATCH đè lên ID=1, bổ sung các Header bảo mật bắt buộc của Supabase
             req = urllib.request.Request(
                 f"{SUPABASE_URL}/rest/v1/notebook?id=eq.1",
                 data=payload,
                 headers={
                     "apikey": SUPABASE_KEY, 
                     "Authorization": f"Bearer {SUPABASE_KEY}", 
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Prefer": "return=representation"  # Ép Supabase xử lý và phản hồi kết quả
                 },
                 method="PATCH"
             )
@@ -194,7 +195,7 @@ def main(page: ft.Page):
             padding=15, border_radius=12, bgcolor=ft.Colors.WHITE10, width=320
         ),
         ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
-        ft.ElevatedButton("XOAY COMBO NGẪU NHIÊN 🎲", bgcolor=ft.Colors.PINK_500, color=ft.Colors.WHITE, on_click=generate_random_combo, width=280),
+        ft.ElevatedButton("Thử một combo ngẫu nhiên 🎲", bgcolor=ft.Colors.PINK_500, color=ft.Colors.WHITE, on_click=generate_random_combo, width=280),
         ft.Divider(height=15, color=ft.Colors.WHITE24),
         ft.OutlinedButton("THÊM TRICK MỚI", icon=ft.Icons.ADD, style=ft.ButtonStyle(color=ft.Colors.PINK_300), on_click=lambda _: setattr(dialog, "open", True) or page.update(), width=220),
         ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
