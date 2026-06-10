@@ -1,11 +1,24 @@
 import flet as ft
 import random
 import json
-import urllib.parse
 
-# 🌟 THÔNG SỐ CỦA BẠN:
-SUPABASE_URL = "https://acumyjqadlqbyboacqgw.supabase.co" 
-SUPABASE_KEY = "sb_publishable_4WUvqixWWaF8eyjU8FIiZg_O-HPtpxS" # <--- BẮT BUỘC: Bạn hãy dán toàn bộ chuỗi key siêu dài của bạn vào đây
+# --- KEY lưu trữ ---
+STORAGE_KEY = "poledance_kho_trick"
+
+# Dữ liệu mặc định nếu lần đầu dùng app (chưa có gì trong máy)
+DEFAULT_DATA = {
+    "Intro": [
+        {"name": "Đi bộ quanh cột", "difficulty": 1},
+        {"name": "Xoay hông dạo đầu", "difficulty": 1}
+    ],
+    "Main Trick": [
+        {"name": "Superman", "difficulty": 4},
+        {"name": "Scorpio", "difficulty": 3}
+    ],
+    "Outro": [
+        {"name": "Floorwork", "difficulty": 2}
+    ]
+}
 
 def main(page: ft.Page):
     page.title = "Pole Dance Notebook"
@@ -13,76 +26,34 @@ def main(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.scroll = "adaptive"
 
-    # Kho dữ liệu mặc định dự phòng nếu mạng lag
-    kho_trick = {
-        "Intro": [{"name": "Đi bộ quanh cột", "difficulty": 1}, {"name": "Xoay hông dạo đầu", "difficulty": 1}],
-        "Main Trick": [{"name": "Superman", "difficulty": 4}, {"name": "Scorpio", "difficulty": 3}],
-        "Outro": [{"name": "Floorwork", "difficulty": 2}]
-    }
+    # --- LƯU / TẢI DỮ LIỆU BẰNG CLIENT STORAGE (PERSISTENT TRÊN IOS) ---
 
-    # --- CƠ CHẾ ĐỒNG BỘ BẰNG JAVASCRIPT GỐC (BẤT TỬ TRÊN SAFARI IPHONE) ---
-    def save_to_storage():
+    def load_from_storage():
+        """Tải dữ liệu từ bộ nhớ máy. Nếu chưa có thì dùng dữ liệu mặc định."""
         try:
-            json_str = json.dumps(kho_trick, ensure_ascii=False)
-            # Mã hóa chuỗi để an toàn khi truyền vào câu lệnh JS
-            encoded_val = urllib.parse.quote(json_str)
-            
-            # Ép Safari chạy lệnh fetch() gốc của trình duyệt - Chống chặn CORS tuyệt đối
-            js_script = f"""
-            fetch("{SUPABASE_URL}/rest/v1/notebook?id=eq.1", {{
-                method: "POST",
-                headers: {{
-                    "apikey": "{SUPABASE_KEY}",
-                    "Authorization": "Bearer {SUPABASE_KEY}",
-                    "Content-Type": "application/json",
-                    "X-HTTP-Method-Override": "PATCH",
-                    "Prefer": "resolution=merge-dup"
-                }},
-                body: JSON.stringify({{ value: decodeURIComponent("{encoded_val}") }})
-            }}).catch(err => console.log(err));
-            """
-            page.run_javascript(js_script)
+            raw = page.client_storage.get(STORAGE_KEY)
+            if raw:
+                return json.loads(raw)
+        except Exception as ex:
+            print("Lỗi tải:", ex)
+        return json.loads(json.dumps(DEFAULT_DATA))  # Deep copy dữ liệu mặc định
+
+    def save_to_storage():
+        """Lưu dữ liệu vào bộ nhớ máy ngay lập tức."""
+        try:
+            page.client_storage.set(STORAGE_KEY, json.dumps(kho_trick, ensure_ascii=False))
         except Exception as ex:
             print("Lỗi lưu:", ex)
 
-    def load_from_storage():
-        nonlocal kho_trick
-        try:
-            # Gọi lệnh JS lấy dữ liệu và gán tạm vào tiêu đề trang để Python đọc được
-            js_script = f"""
-            fetch("{SUPABASE_URL}/rest/v1/notebook?id=eq.1&select=value", {{
-                method: "GET",
-                headers: {{
-                    "apikey": "{SUPABASE_KEY}",
-                    "Authorization": "Bearer {SUPABASE_KEY}"
-                }}
-            }})
-            .then(res => res.json())
-            .then(data => {{
-                if(data && data.length > 0) {{
-                    document.title = "ONLINE_DATA:" + encodeURIComponent(data[0].value);
-                }}
-            }}).catch(err => console.log(err));
-            """
-            page.run_javascript(js_script)
-            
-            import time
-            time.sleep(0.5) # Cho iPhone 0.5 giây để kéo dữ liệu từ mạng về
-            
-            if page.title.startswith("ONLINE_DATA:"):
-                raw_val = page.title.replace("ONLINE_DATA:", "")
-                json_str = urllib.parse.unquote(raw_val)
-                kho_trick = json.loads(json_str)
-                page.title = "Pole Dance Notebook" # Trả lại tiêu đề chuẩn
-        except Exception as ex:
-            print("Lỗi tải:", ex)
+    # Tải dữ liệu khi khởi động app
+    kho_trick = load_from_storage()
 
-    # Kích hoạt tải dữ liệu trực tuyến từ Supabase
-    load_from_storage()
+    # --- GIAO DIỆN ---
 
-    # --- TOÀN BỘ GIAO DIỆN CHỨC NĂNG CỦA BẠN (GIỮ NGUYÊN) ---
     editing_trick_info = None
-    def get_star_string(level): return "⭐" * int(level)
+
+    def get_star_string(level):
+        return "⭐" * int(level)
 
     def delete_trick(category, trick_item):
         for index, item in enumerate(kho_trick[category]):
@@ -100,16 +71,26 @@ def main(page: ft.Page):
         edit_dialog.open = True
         page.update()
 
-    group_intro = ft.ExpansionTile(title=ft.Text("Intro 🎬", size=18, weight="bold", color=ft.Colors.PINK_300))
-    group_main = ft.ExpansionTile(title=ft.Text("Main Trick 💎", size=18, weight="bold", color=ft.Colors.PURPLE_300))
-    group_outro = ft.ExpansionTile(title=ft.Text("Outro 🏁", size=18, weight="bold", color=ft.Colors.BLUE_300))
+    group_intro = ft.ExpansionTile(
+        title=ft.Text("Intro 🎬", size=18, weight="bold", color=ft.Colors.PINK_300)
+    )
+    group_main = ft.ExpansionTile(
+        title=ft.Text("Main Trick 💎", size=18, weight="bold", color=ft.Colors.PURPLE_300)
+    )
+    group_outro = ft.ExpansionTile(
+        title=ft.Text("Outro 🏁", size=18, weight="bold", color=ft.Colors.BLUE_300)
+    )
 
     def update_list_view():
         group_intro.controls = []
         group_main.controls = []
         group_outro.controls = []
-        def make_delete_callback(cat, it): return lambda e: delete_trick(cat, it)
-        def make_edit_callback(cat, it): return lambda e: open_edit_dialog(cat, it)
+
+        def make_delete_callback(cat, it):
+            return lambda e: delete_trick(cat, it)
+
+        def make_edit_callback(cat, it):
+            return lambda e: open_edit_dialog(cat, it)
 
         for item in kho_trick["Intro"]:
             group_intro.controls.append(ft.ListTile(
@@ -117,30 +98,39 @@ def main(page: ft.Page):
                 subtitle=ft.Text(get_star_string(item["difficulty"]), color=ft.Colors.YELLOW_400),
                 leading=ft.Icon(ft.Icons.PLAY_ARROW_ROUNDED, color=ft.Colors.PINK_300),
                 trailing=ft.Row([
-                    ft.IconButton(ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18, on_click=make_edit_callback("Intro", item)),
-                    ft.IconButton(ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18, on_click=make_delete_callback("Intro", item))
+                    ft.IconButton(ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18,
+                                  on_click=make_edit_callback("Intro", item)),
+                    ft.IconButton(ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18,
+                                  on_click=make_delete_callback("Intro", item))
                 ], tight=True, spacing=0)
             ))
+
         for item in kho_trick["Main Trick"]:
             group_main.controls.append(ft.ListTile(
                 title=ft.Text(item["name"], weight="bold"),
                 subtitle=ft.Text(get_star_string(item["difficulty"]), color=ft.Colors.YELLOW_400),
                 leading=ft.Icon(ft.Icons.DIAMOND_OUTLINED, color=ft.Colors.PURPLE_300),
                 trailing=ft.Row([
-                    ft.IconButton(ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18, on_click=make_edit_callback("Main Trick", item)),
-                    ft.IconButton(ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18, on_click=make_delete_callback("Main Trick", item))
+                    ft.IconButton(ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18,
+                                  on_click=make_edit_callback("Main Trick", item)),
+                    ft.IconButton(ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18,
+                                  on_click=make_delete_callback("Main Trick", item))
                 ], tight=True, spacing=0)
             ))
+
         for item in kho_trick["Outro"]:
             group_outro.controls.append(ft.ListTile(
                 title=ft.Text(item["name"], weight="bold"),
                 subtitle=ft.Text(get_star_string(item["difficulty"]), color=ft.Colors.YELLOW_400),
                 leading=ft.Icon(ft.Icons.FLAG_OUTLINED, color=ft.Colors.BLUE_300),
                 trailing=ft.Row([
-                    ft.IconButton(ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18, on_click=make_edit_callback("Outro", item)),
-                    ft.IconButton(ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18, on_click=make_delete_callback("Outro", item))
+                    ft.IconButton(ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18,
+                                  on_click=make_edit_callback("Outro", item)),
+                    ft.IconButton(ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18,
+                                  on_click=make_delete_callback("Outro", item))
                 ], tight=True, spacing=0)
             ))
+
         page.update()
 
     txt_combo_intro = ft.Text("Intro: ---", size=16, color=ft.Colors.PINK_100)
@@ -160,12 +150,23 @@ def main(page: ft.Page):
         page.update()
 
     input_name = ft.TextField(label="Tên động tác", hint_text="Ví dụ: Superman...")
-    dropdown_type = ft.Dropdown(label="Nhóm", options=[ft.dropdown.Option("Intro"), ft.dropdown.Option("Main Trick"), ft.dropdown.Option("Outro")])
-    slider_diff = ft.Slider(min=1, max=5, divisions=4, label="Độ khó: {value} sao", value=3, active_color=ft.Colors.YELLOW_700)
+    dropdown_type = ft.Dropdown(
+        label="Nhóm",
+        options=[
+            ft.dropdown.Option("Intro"),
+            ft.dropdown.Option("Main Trick"),
+            ft.dropdown.Option("Outro")
+        ]
+    )
+    slider_diff = ft.Slider(min=1, max=5, divisions=4, label="Độ khó: {value} sao",
+                            value=3, active_color=ft.Colors.YELLOW_700)
 
     def save_trick(e):
         if input_name.value and dropdown_type.value:
-            kho_trick[dropdown_type.value].append({"name": input_name.value, "difficulty": int(slider_diff.value)})
+            kho_trick[dropdown_type.value].append({
+                "name": input_name.value,
+                "difficulty": int(slider_diff.value)
+            })
             save_to_storage()
             update_list_view()
             dialog.open = False
@@ -176,18 +177,26 @@ def main(page: ft.Page):
 
     dialog = ft.AlertDialog(
         title=ft.Text("Thêm Trick Mới ⭐"),
-        content=ft.Column([input_name, dropdown_type, ft.Text("Độ khó (1-5 sao):", size=14, color=ft.Colors.WHITE54), slider_diff], tight=True, spacing=15),
-        actions=[ft.TextButton("Hủy", on_click=lambda _: setattr(dialog, "open", False) or page.update()), ft.ElevatedButton("LƯU LẠI", bgcolor=ft.Colors.PINK_500, color=ft.Colors.WHITE, on_click=save_trick)]
+        content=ft.Column(
+            [input_name, dropdown_type,
+             ft.Text("Độ khó (1-5 sao):", size=14, color=ft.Colors.WHITE54),
+             slider_diff],
+            tight=True, spacing=15
+        ),
+        actions=[
+            ft.TextButton("Hủy", on_click=lambda _: setattr(dialog, "open", False) or page.update()),
+            ft.ElevatedButton("LƯU LẠI", bgcolor=ft.Colors.PINK_500, color=ft.Colors.WHITE, on_click=save_trick)
+        ]
     )
     page.overlay.append(dialog)
 
     input_edit_name = ft.TextField(label="Tên động tác", hint_text="Sửa tên...")
-    slider_edit_diff = ft.Slider(min=1, max=5, divisions=4, label="Độ khó: {value} sao", value=3, active_color=ft.Colors.YELLOW_700)
+    slider_edit_diff = ft.Slider(min=1, max=5, divisions=4, label="Độ khó: {value} sao",
+                                 value=3, active_color=ft.Colors.YELLOW_700)
 
     def save_edited_trick(e):
         nonlocal editing_trick_info
         if input_edit_name.value and editing_trick_info:
-            category = editing_trick_info["category"]
             old_item = editing_trick_info["item"]
             old_item["name"] = input_edit_name.value
             old_item["difficulty"] = int(slider_edit_diff.value)
@@ -199,8 +208,17 @@ def main(page: ft.Page):
 
     edit_dialog = ft.AlertDialog(
         title=ft.Text("Chỉnh Sửa Trick ✏️"),
-        content=ft.Column([input_edit_name, ft.Text("Thay đổi độ khó (1-5 sao):", size=14, color=ft.Colors.WHITE54), slider_edit_diff], tight=True, spacing=15),
-        actions=[ft.TextButton("Hủy", on_click=lambda _: setattr(edit_dialog, "open", False) or page.update()), ft.ElevatedButton("CẬP NHẬT", bgcolor=ft.Colors.PINK_500, color=ft.Colors.WHITE, on_click=save_edited_trick)]
+        content=ft.Column(
+            [input_edit_name,
+             ft.Text("Thay đổi độ khó (1-5 sao):", size=14, color=ft.Colors.WHITE54),
+             slider_edit_diff],
+            tight=True, spacing=15
+        ),
+        actions=[
+            ft.TextButton("Hủy", on_click=lambda _: setattr(edit_dialog, "open", False) or page.update()),
+            ft.ElevatedButton("CẬP NHẬT", bgcolor=ft.Colors.PINK_500, color=ft.Colors.WHITE,
+                              on_click=save_edited_trick)
+        ]
     )
     page.overlay.append(edit_dialog)
 
@@ -208,17 +226,25 @@ def main(page: ft.Page):
         ft.Text("POLE DANCE NOTEBOOK", size=24, weight="bold"),
         ft.Divider(height=5, color=ft.Colors.TRANSPARENT),
         ft.Container(
-            content=ft.Column([ft.Text("COMBO HÔM NAY:", size=12, color=ft.Colors.WHITE54, weight="bold"), txt_combo_intro, txt_combo_main, txt_combo_outro], spacing=8),
+            content=ft.Column([
+                ft.Text("COMBO HÔM NAY:", size=12, color=ft.Colors.WHITE54, weight="bold"),
+                txt_combo_intro, txt_combo_main, txt_combo_outro
+            ], spacing=8),
             padding=15, border_radius=12, bgcolor=ft.Colors.WHITE10, width=320
         ),
         ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
-        ft.ElevatedButton("Nay đi combo nào? 🎲", bgcolor=ft.Colors.PINK_500, color=ft.Colors.WHITE, on_click=generate_random_combo, width=280),
+        ft.ElevatedButton("Nay đi combo nào? 🎲", bgcolor=ft.Colors.PINK_500,
+                          color=ft.Colors.WHITE, on_click=generate_random_combo, width=280),
         ft.Divider(height=15, color=ft.Colors.WHITE24),
-        ft.OutlinedButton("THÊM TRICK MỚI", icon=ft.Icons.ADD, style=ft.ButtonStyle(color=ft.Colors.PINK_300), on_click=lambda _: setattr(dialog, "open", True) or page.update(), width=220),
+        ft.OutlinedButton("THÊM TRICK MỚI", icon=ft.Icons.ADD,
+                          style=ft.ButtonStyle(color=ft.Colors.PINK_300),
+                          on_click=lambda _: setattr(dialog, "open", True) or page.update(),
+                          width=220),
         ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
         ft.Text("KHO TRICK CỦA BẠN", size=14, color=ft.Colors.WHITE54, weight="bold"),
         ft.Column([group_intro, group_main, group_outro], spacing=5, width=320)
     )
+
     update_list_view()
 
 ft.app(target=main)
