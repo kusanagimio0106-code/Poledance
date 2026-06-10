@@ -29,20 +29,30 @@ def main(page: ft.Page):
     page.update()
     time.sleep(2)
     
-    # 1. KHO DỮ LIỆU GỐC (Lưu tên và độ khó ⭐)
-    kho_trick = {
-        "Intro": [
-            {"name": "Đi bộ quanh cột", "difficulty": 1},
-            {"name": "Xoay hông dạo đầu", "difficulty": 1}
-        ],
-        "Main Trick": [
-            {"name": "Superman", "difficulty": 4},
-            {"name": "Scorpio", "difficulty": 3}
-        ],
-        "Outro": [
-            {"name": "Floorwork", "difficulty": 2}
-        ]
-    }
+    # 1. KHỞI TẠO HOẶC NẠP DỮ LIỆU TỪ BỘ NHỚ IPHONE ---
+    # Nếu máy đã có dữ liệu thì nạp ra, nếu chưa có (lần đầu mở app) thì lấy dữ liệu mặc định
+    if page.client_storage.contains_key("kho_trick_data"):
+        import json
+        kho_trick = page.client_storage.get("kho_trick_data")
+    else:
+        kho_trick = {
+            "Intro": [
+                {"name": "Đi bộ quanh cột", "difficulty": 1},
+                {"name": "Xoay hông dạo đầu", "difficulty": 1}
+            ],
+            "Main Trick": [
+                {"name": "Superman", "difficulty": 4},
+                {"name": "Scorpio", "difficulty": 3}
+            ],
+            "Outro": [
+                {"name": "Floorwork", "difficulty": 2}
+            ]
+        }
+        page.client_storage.set("kho_trick_data", kho_trick)
+
+    # Hàm bổ trợ tự động lưu dữ liệu vào iPhone mỗi khi có thay đổi
+    def save_to_storage():
+        page.client_storage.set("kho_trick_data", kho_trick)
 
     # Biến tạm để lưu thông tin trick đang được chỉnh sửa
     editing_trick_info = None
@@ -53,19 +63,20 @@ def main(page: ft.Page):
 
     # --- HÀM XỬ LÝ XÓA TRICK ---
     def delete_trick(category, trick_item):
-        if trick_item in kho_trick[category]:
-            kho_trick[category].remove(trick_item)
-            update_list_view()
+        # Tìm vị trí của trick có tên trùng khớp trong nhóm
+        for index, item in enumerate(kho_trick[category]):
+            if item["name"] == trick_item["name"]:
+                kho_trick[category].pop(index) # Xóa phần tử tại vị trí đó
+                break
+        save_to_storage() # Lưu lại vào bộ nhớ iPhone
+        update_list_view() # Cập nhật giao diện
 
     # --- HÀM XỬ LÝ MỞ POPUP SỬA TRICK ---
     def open_edit_dialog(category, trick_item):
         nonlocal editing_trick_info
         editing_trick_info = {"category": category, "item": trick_item}
-        
-        # Điền dữ liệu cũ vào form sửa
         input_edit_name.value = trick_item["name"]
         slider_edit_diff.value = trick_item["difficulty"]
-        
         edit_dialog.open = True
         page.update()
 
@@ -153,6 +164,7 @@ def main(page: ft.Page):
                 "name": input_name.value,
                 "difficulty": int(slider_diff.value)
             })
+            save_to_storage()
             update_list_view()
             dialog.open = False
             # Reset form
