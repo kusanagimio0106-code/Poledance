@@ -44,9 +44,30 @@ def main(page: ft.Page):
         ]
     }
 
+    # Biến tạm để lưu thông tin trick đang được chỉnh sửa
+    editing_trick_info = None
+
     # Hàm hỗ trợ hiển thị chuỗi sao ⭐
     def get_star_string(level):
         return "⭐" * int(level)
+
+    # --- HÀM XỬ LÝ XÓA TRICK ---
+    def delete_trick(category, trick_item):
+        if trick_item in kho_trick[category]:
+            kho_trick[category].remove(trick_item)
+            update_list_view()
+
+    # --- HÀM XỬ LÝ MỞ POPUP SỬA TRICK ---
+    def open_edit_dialog(category, trick_item):
+        nonlocal editing_trick_info
+        editing_trick_info = {"category": category, "item": trick_item}
+        
+        # Điền dữ liệu cũ vào form sửa
+        input_edit_name.value = trick_item["name"]
+        slider_edit_diff.value = trick_item["difficulty"]
+        
+        edit_dialog.open = True
+        page.update()
 
     # --- CÁC THÀNH PHẦN HIỂN THỊ DANH SÁCH ---
     group_intro = ft.ExpansionTile(title=ft.Text("Intro 🎬", size=18, weight="bold", color=ft.Colors.PINK_300))
@@ -63,19 +84,31 @@ def main(page: ft.Page):
             group_intro.controls.append(ft.ListTile(
                 title=ft.Text(item["name"], weight="bold"),
                 subtitle=ft.Text(get_star_string(item["difficulty"]), color=ft.Colors.YELLOW_400),
-                leading=ft.Icon(ft.Icons.PLAY_ARROW_ROUNDED, color=ft.Colors.PINK_300)
+                leading=ft.Icon(ft.Icons.PLAY_ARROW_ROUNDED, color=ft.Colors.PINK_300),
+                trailing=ft.Row([
+                    ft.IconButton(icon=ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18, on_click=lambda e, cat="Intro", it=item: open_edit_dialog(cat, it)),
+                    ft.IconButton(icon=ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18, on_click=lambda e, cat="Intro", it=item: delete_trick(cat, it))
+                ], tight=True, spacing=0)
             ))
         for item in kho_trick["Main Trick"]:
             group_main.controls.append(ft.ListTile(
                 title=ft.Text(item["name"], weight="bold"),
                 subtitle=ft.Text(get_star_string(item["difficulty"]), color=ft.Colors.YELLOW_400),
-                leading=ft.Icon(ft.Icons.DIAMOND_OUTLINED, color=ft.Colors.PURPLE_300)
+                leading=ft.Icon(ft.Icons.DIAMOND_OUTLINED, color=ft.Colors.PURPLE_300),
+                trailing=ft.Row([
+                    ft.IconButton(icon=ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18, on_click=lambda e, cat="Intro", it=item: open_edit_dialog(cat, it)),
+                    ft.IconButton(icon=ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18, on_click=lambda e, cat="Intro", it=item: delete_trick(cat, it))
+                ], tight=True, spacing=0)
             ))
         for item in kho_trick["Outro"]:
             group_outro.controls.append(ft.ListTile(
                 title=ft.Text(item["name"], weight="bold"),
                 subtitle=ft.Text(get_star_string(item["difficulty"]), color=ft.Colors.YELLOW_400),
-                leading=ft.Icon(ft.Icons.FLAG_OUTLINED, color=ft.Colors.BLUE_300)
+                leading=ft.Icon(ft.Icons.FLAG_OUTLINED, color=ft.Colors.BLUE_300),
+                trailing=ft.Row([
+                    ft.IconButton(icon=ft.Icons.EDIT_ROUNDED, icon_color=ft.Colors.WHITE54, icon_size=18, on_click=lambda e, cat="Intro", it=item: open_edit_dialog(cat, it)),
+                    ft.IconButton(icon=ft.Icons.DELETE_OUTLINE_ROUNDED, icon_color=ft.Colors.RED_400, icon_size=18, on_click=lambda e, cat="Intro", it=item: delete_trick(cat, it))
+                ], tight=True, spacing=0)
             ))
         page.update()
 
@@ -134,6 +167,39 @@ def main(page: ft.Page):
         ],
     )
     page.overlay.append(dialog)
+
+    # --- GIAO DIỆN POPUP CHỈNH SỬA TRICK ---
+    input_edit_name = ft.TextField(label="Tên động tác", hint_text="Sửa tên...")
+    slider_edit_diff = ft.Slider(min=1, max=5, divisions=4, label="Độ khó: {value} sao", value=3, active_color=ft.Colors.YELLOW_700)
+
+    def save_edited_trick(e):
+        nonlocal editing_trick_info
+        if input_edit_name.value and editing_trick_info:
+            category = editing_trick_info["category"]
+            old_item = editing_trick_info["item"]
+            
+            # Cập nhật thông tin mới vào dữ liệu gốc
+            old_item["name"] = input_edit_name.value
+            old_item["difficulty"] = int(slider_edit_diff.value)
+            
+            update_list_view()
+            edit_dialog.open = False
+            editing_trick_info = None
+            page.update()
+
+    edit_dialog = ft.AlertDialog(
+        title=ft.Text("Chỉnh Sửa Trick ✏️"),
+        content=ft.Column([
+            input_edit_name,
+            ft.Text("Thay đổi độ khó (1-5 sao):", size=14, color=ft.Colors.WHITE54),
+            slider_edit_diff
+        ], tight=True, spacing=15),
+        actions=[
+            ft.TextButton("Hủy", on_click=lambda _: setattr(edit_dialog, "open", False) or page.update()),
+            ft.ElevatedButton("CẬP NHẬT", bgcolor=ft.Colors.PINK_500, color=ft.Colors.WHITE, on_click=save_edited_trick),
+        ],
+    )
+    page.overlay.append(edit_dialog)
 
     # --- GIAO DIỆN CHÍNH ---
     page.add(
