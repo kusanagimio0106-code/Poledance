@@ -80,6 +80,14 @@ def main(page: ft.Page):
         group_main.controls = []
         group_outro.controls = []
 
+        # Hàm bổ trợ tạo hành động xóa chính xác từng item (Tránh lỗi lưu biến của Python)
+        def make_delete_callback(cat, it):
+            return lambda e: delete_trick(cat, it)
+
+        # Hàm bổ trợ tạo hành động sửa chính xác từng item
+        def make_edit_callback(cat, it):
+            return lambda e: open_edit_dialog(cat, it)
+
         for item in kho_trick["Intro"]:
             group_intro.controls.append(ft.ListTile(
                 title=ft.Text(item["name"], weight="bold"),
