@@ -130,10 +130,12 @@ def main(page: ft.Page):
             btn_upload.bgcolor = ft.Colors.PINK_900
         page.update()
 
-    # ĐÃ SỬA: Tạo đối tượng rỗng trước, gán hàm xử lý sau bằng dòng riêng biệt để né lỗi __init__
     file_picker = ft.FilePicker()
     file_picker.on_result = on_file_picker_result
-    page.overlay.append(file_picker)
+    
+    # ĐÃ THAY ĐỔI QUYẾT ĐỊNH: Bọc FilePicker vào một cái hộp tàng hình (0x0 pixel) để không che màn hình
+    invisible_picker_box = ft.Container(content=file_picker, width=0, height=0, visible=True)
+    page.overlay.append(invisible_picker_box)
 
     # --- GIAO DIỆN POPUP THÊM TRICK ---
     input_name = ft.TextField(label="Tên động tác / Trick", hint_text="Ví dụ: Superman...")
