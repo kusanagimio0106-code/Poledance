@@ -48,10 +48,11 @@ def main(page: ft.Page):
     # --- GIẢI PHÁP LƯU TRỮ TRÊN IPHONE AN TOÀN KHÔNG SẬP NGUỒN ---
     def save_to_storage():
         try:
-            # Chuyển kho dữ liệu sang dạng chuỗi text JSON
             json_str = json.dumps(kho_trick, ensure_ascii=False)
-            # Ép Safari lưu thẳng vào bộ nhớ hệ thống web thông qua Javascipt ngầm
-            page.run_javascript(f"localStorage.setItem('kho_trick_pwa', `{json_str}`);")
+            # Mã hóa chuỗi để né lỗi ký tự đặc biệt hoặc dấu ngoặc kép khi truyền qua JS
+            import base64
+            b64_str = base64.b64encode(json_str.encode('utf-8')).decode('utf-8')
+            page.run_javascript(f"localStorage.setItem('kho_trick_pwa_b64', '{b64_str}');")
         except:
             pass
 
@@ -59,9 +60,11 @@ def main(page: ft.Page):
         nonlocal kho_trick
         try:
             # Gọi lệnh đồng bộ từ LocalStorage của iPhone
-            stored_data = page.run_javascript("localStorage.getItem('kho_trick_pwa');")
-            if stored_data:
-                kho_trick = json.loads(stored_data)
+            b64_str = page.run_javascript_async("localStorage.getItem('kho_trick_pwa_b64');")
+            if b64_str:
+                import base64
+                json_str = base64.b64decode(b64_str.encode('utf-8')).decode('utf-8')
+                kho_trick = json.loads(json_str)
         except:
             pass
 
